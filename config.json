@@ -38,9 +38,9 @@
 	],
 	"crons": [
 		{
-			"cron_name": "cronBigDataImport",
+			"cron_name": "cronbigdata",
 			"cron_description": "Big Data Import External Module",
-			"method": "cronBigDataImport",
+			"method": "cronbigdata",
 			"cron_frequency": "1",
 			"cron_max_run_time": "7200"
 		}

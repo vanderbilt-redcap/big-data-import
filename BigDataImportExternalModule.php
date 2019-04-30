@@ -10,7 +10,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         parent::__construct();
     }
 
-    function cronBigDataImport(){
+    function cronbigdata(){
         $originalPid = $_GET['pid'];
         foreach($this->framework->getProjectsWithModuleEnabled() as $localProjectId){
             // This automatically associates all log statements with this project.
