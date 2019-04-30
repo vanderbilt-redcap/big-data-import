@@ -1,0 +1,48 @@
+{
+	"name": "Big Data Import",
+
+	"namespace": "Vanderbilt\\BigDataImportExternalModule",
+	"framework-version": 2,
+	"authors": [
+		{
+			"name": "Eva Bascompte Moragas",
+			"email": "datacore@vanderbilt.edu",
+			"institution": "Vanderbilt University Medical Center"
+		}
+	],
+
+	"permissions": [],
+
+	"links": {
+		"project": [
+			{
+				"name": "Big Data Import",
+				"icon": "blog_blue",
+				"url": "import.php",
+				"show-header-and-footer": true
+			}
+		]
+	},
+
+	"no-auth-pages":["configure"],
+
+	"description": "Tool to help import big CVS files without the need to split them.",
+
+	"project-settings": [
+		{
+			"key": "import-email",
+			"name": "List of emails, <b>separated by commas</b> <br/>to send the notification to once the import has finished",
+			"type": "textarea",
+			"required": "true"
+		}
+	],
+	"crons": [
+		{
+			"cron_name": "cronBigDataImport",
+			"cron_description": "Big Data Import External Module",
+			"method": "cronBigDataImport",
+			"cron_frequency": "1",
+			"cron_max_run_time": "7200"
+		}
+	]
+}
