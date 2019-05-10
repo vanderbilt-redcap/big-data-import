@@ -154,7 +154,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             ]);
 
             if ($stopEarly) {
-                $this->resetValues($project_id, $edoc);
+                $this->resetValues($project_id, $edoc,$id);
                 if ($import_email != "") {
                     $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
                     REDCap::email($import_email, 'noreply@vumc.org', 'Import process finished', $email_text);
