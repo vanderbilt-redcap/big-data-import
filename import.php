@@ -27,7 +27,7 @@
     .fa-check{
         color: green;
     }
-    .fa-remove{
+    .fa-times{
         color: red;
     }
 </style>
@@ -155,7 +155,7 @@
 
     </div>
     <div>
-            <div class="pendingFile accordion_pointer"><span class="fa fa-clock"></span> <a onclick="$('#modal-data-upload-confirmation').show()" data-toggle="collapse" data-target='#accordion'>Click here to check pending files </a></div>
+            <div class="pendingFile accordion_pointer"><span class="fa fa-clock fa-fw"></span> <a onclick="$('#modal-data-upload-confirmation').show()" data-toggle="collapse" data-target='#accordion'>Click here to check pending files </a></div>
             <div id='accordion' class='alert alert-primary collapse' style='border:1px solid #b8daff !important;max-width: 500px'>
             <?php
             $edoc_list = $module->getProjectSetting('edoc');

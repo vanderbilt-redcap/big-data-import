@@ -17,12 +17,16 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             // This automatically associates all log statements with this project.
             $_GET['pid'] = $localProjectId;
             try{
-//                $import = $this->getProjectSetting('import', $localProjectId);
                 $import_list = $this->getProjectSetting('import', $localProjectId);
                 foreach ($import_list as $id=>$import){
                     if ($import) {
-                        $this->importRecords($localProjectId, $this->getProjectSetting('edoc', $localProjectId)[$id],$id);
-                        $this->log("<div>Import process finished. <span class='fa fa-check'></span></div>");
+                        $error = $this->importRecords($localProjectId, $this->getProjectSetting('edoc', $localProjectId)[$id],$id);
+                        if(!$error){
+                            $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
+                        }else{
+                            $logtext = "<div>Import process finished with errors <span class='fa fa-times fa-fw'></span></div>";
+                        }
+                        $this->log($logtext);
                     }
                 }
             }
@@ -143,7 +147,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
             $icon = "";
             if ($stopEarly) {
-                $icon = "<span class='fa fa-remove'></span>";
+                $icon = "<span class='fa fa-times  fa-fw'></span>";
             }
             $this->log("Import $message for $batchText $icon", [
                 'details' => json_encode($results, JSON_PRETTY_PRINT)
@@ -157,7 +161,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
                 }
                 $this->sendErrorEmail("REDCap was unable to import some record data.");
-                return;
+                return true;
             }
 
         }
@@ -168,6 +172,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $email_text .= "<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
             REDCap::email($import_email, 'noreply@vumc.org', 'Import process finished', $email_text);
         }
+        return false;
     }
 
     private function adjustSaveResults($results){
