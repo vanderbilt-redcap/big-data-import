@@ -17,7 +17,7 @@
 		"project": [
 			{
 				"name": "Big Data Import",
-				"icon": "blog_blue",
+				"icon": "database_table",
 				"url": "import.php",
 				"show-header-and-footer": true
 			}

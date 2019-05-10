@@ -17,6 +17,19 @@
     .error-title{
         color: #a94442;
     }
+    .pendingFile{padding:10px 0px;}
+    .pendingFile,pendingFile a,.pendingFile a:active,.pendingFile a:hover,.pendingFile a:visited{
+        text-decoration:underline;
+        padding-right: 30px;
+        color:#007bff !important;
+        cursor:pointer;
+    }
+    .fa-check{
+        color: green;
+    }
+    .fa-remove{
+        color: red;
+    }
 </style>
 <script>
     function fileValidation(fileInput){
@@ -70,7 +83,13 @@
                     if (data.status != 'success') {
                         simpleDialog(data.status+" One or more of the files could not be saved."+JSON.stringify(data), 'Error', null, 500);
                     }else{
-                        $('#Msg').show();
+                        var url = window.location.href;
+                        if(window.location.href.match(/(&message)/)){
+                            url = window.location.href = window.location.href.replace( /(&message)/, "&message" );
+                        }else{
+                            url = window.location.href + "&message";
+                        }
+                        window.location = url;
                     }
                 },
                 error: function(e) {
@@ -122,17 +141,46 @@
 <div id="big-data-module-wrapper">
     <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
     <br>
-    <?php
-    //$module->cronBigDataImport();
-
-    ?>
     <div>
-        <div class="alert" id="Msg" style="display:none;max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been uploaded.<br/>If you have set an email, a message will be sent once the import is ready, if not, refresh this page.</div>
+        <?php
+        if(array_key_exists('message', $_GET)){
+            echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been uploaded.<br/>If you have set an email, a message will be sent once the import is ready, if not, refresh this page.</div>';
+        }
+        ?>
         <form method="post" onsubmit="return saveFilesIfTheyExist('<?=$module->getUrl('saveData.php')?>');" id="importForm">
             <label style="padding-right: 30px;">Select a CSV file to import:</label>
             <input type="file" id="importFile" onchange="return fileValidation(this)">
             <input type="submit" id="import" class="btn" style="color: #fff;background-color: #007bff;border-color: #007bff;cursor:not-allowed" disabled>
         </form>
+
+    </div>
+    <div>
+            <div class="pendingFile accordion_pointer"><span class="fa fa-clock"></span> <a onclick="$('#modal-data-upload-confirmation').show()" data-toggle="collapse" data-target='#accordion'>Click here to check pending files </a></div>
+            <div id='accordion' class='alert alert-primary collapse' style='border:1px solid #b8daff !important;max-width: 500px'>
+            <?php
+            $edoc_list = $module->getProjectSetting('edoc');
+            $docs = "";
+            foreach ($edoc_list as $edoc){
+                $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+                $q = db_query($sql);
+
+                if ($error = db_error()) {
+                    die($sql . ': ' . $error);
+                }
+                while ($row = db_fetch_assoc($q)) {
+                    $docs .= "<div><span class='fa fa-file'></span> ".$row['doc_name']."</div>";
+                }
+            }
+
+            if($docs != ""){
+                echo $docs;
+            }else{
+                echo "<div><i>None</i>";
+            }
+            echo "";
+            ?>
+            </div>
+    </div>
     </div>
     <br>
     <br>
