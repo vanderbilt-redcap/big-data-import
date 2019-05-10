@@ -24,7 +24,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         if(!$error){
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
                         }else{
-                            $logtext = "<div>Import process finished with errors <span class='fa fa-times fa-fw'></span></div>";
+                            $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
                         }
                         $this->log($logtext);
                     }

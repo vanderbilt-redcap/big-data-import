@@ -27,7 +27,7 @@
     .fa-check{
         color: green;
     }
-    .fa-times{
+    .fa-times,.fa-exclamation-circle{
         color: red;
     }
 </style>
