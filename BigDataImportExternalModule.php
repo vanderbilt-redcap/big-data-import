@@ -64,7 +64,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
-        $path = dirname(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR . "edocs/".$stored_name;
+        //$path = dirname(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR . "edocs/".$stored_name;
+        $path = EDOC_PATH.$stored_name;
         $fieldNamesTotal = $this->csvToArrayNFieldNames($path);
         $content = file($path);
         $fieldNames = explode(",", $content[0]);
