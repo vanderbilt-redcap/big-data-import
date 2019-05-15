@@ -46,7 +46,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $q = db_query($sql);
 
         if ($error = db_error()) {
-            die($sql . ': ' . $error);
+            echo $sql . ': ' . $error;
+            $this->exitAfterHook();
         }
 
         $stored_name = "";
@@ -204,7 +205,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $q = db_query($sql);
 
             if ($error = db_error()) {
-                die($sql . ': ' . $error);
+                echo $sql . ': ' . $error;
+                $this->exitAfterHook();
+
             }
         }
     }
