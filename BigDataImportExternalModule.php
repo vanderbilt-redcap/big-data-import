@@ -88,8 +88,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $Proj = new \Project($project_id);
         $event_id = $Proj->firstEventId;
 
-        /*$longitudinal = \REDCap::isLongitudinal();
-        $event_id = $Proj->getEventIdUsingUniqueEventName($matches[1][0]);
+        $longitudinal = \REDCap::isLongitudinal();
+        /*$event_id = $Proj->getEventIdUsingUniqueEventName($matches[1][0]);
         $var = $matches[1][1];
         $event_id = ($longitudinal) ? $Proj->getEventIdUsingUniqueEventName($element[$eventNameKey]) : $Proj->firstEventId;
         */
@@ -124,18 +124,22 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $aux = array();
                 $instrument = "";
                 $instance = "";
-                $repeat_event = "";
+                $event = "";
                 $record = $data_aux[0];
                 foreach ($fieldNames as $index => $field) {
                     if($field == "redcap_repeat_instrument") {
                         $instrument = $data_aux[$index];
                     }else if($field == "redcap_repeat_instance") {
                         $instance = $data_aux[$index];
+                    }else if($longitudinal && $field == "redcap_event_name"){
+                        $event = $Proj->getEventIdUsingUniqueEventName( $data_aux[$index]);
                     }else{
                         $aux[$field] = $data_aux[$index];
                     }
                 }
-                if($repeatable){
+                if($longitudinal){
+                    $data[$record][$event] = $aux;
+                }else if($repeatable){
                     if($instance != ""){
                         $data[$record]['repeat_instances'][$event_id][$instrument][$instance] = $aux;
                     }else{
