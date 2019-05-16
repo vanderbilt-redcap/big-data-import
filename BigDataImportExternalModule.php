@@ -19,8 +19,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             try{
                 $import_list = $this->getProjectSetting('import', $localProjectId);
                 foreach ($import_list as $id=>$import){
-                    if ($import) {
-                        $error = $this->importRecords($localProjectId, $this->getProjectSetting('edoc', $localProjectId)[$id],$id);
+                    $edoc = $this->getProjectSetting('edoc', $localProjectId)[$id];
+                    if ($import && $edoc != "") {
+                        $error = $this->importRecords($localProjectId, $edoc,$id);
                         if(!$error){
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
                         }else{
@@ -122,6 +123,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $aux = array();
                 $instrument = "";
                 $instance = "";
+                $repeat_event = "";
                 $record = $data_aux[0];
                 foreach ($fieldNames as $index => $field) {
                     if($field == "redcap_repeat_instrument") {
@@ -133,7 +135,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     }
                 }
                 if($repeatable){
-                    if($instrument != ""){
+                    if($instance != ""){
                         $data[$record]['repeat_instances'][$event_id][$instrument][$instance] = $aux;
                     }else{
                         $data[$record][$event_id] = $aux;
@@ -143,7 +145,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $data[$record][$event_id] = $aux;
                 }
             }
-
             $count += $chunks;
             $results = \Records::saveData($project_id, 'array', $data, 'normal', 'MDY', 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
             $results = $this->adjustSaveResults($results);
