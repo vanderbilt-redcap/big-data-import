@@ -64,11 +64,14 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
-        //$path = dirname(dirname(dirname(__FILE__))) . DIRECTORY_SEPARATOR . "edocs/".$stored_name;
         $path = EDOC_PATH.$stored_name;
         $fieldNamesTotal = $this->csvToArrayNFieldNames($path);
         $content = file($path);
         $fieldNames = explode(",", $content[0]);
+        foreach ($fieldNames as $id=>$name) {
+            $str = preg_replace('/^[\pZ\p{Cc}\x{feff}]+|[\pZ\p{Cc}\x{feff}]+$/ux', '', $name);
+            $fieldNames[$id] = $str;
+        }
 
         // Use the number of fields times number of records as a metric to determine a reasonable chunk size.
         // The following calculation caused about 500MB of maximum memory usage when importing the TIN Database (pid 61715) on the Vanderbilt REDCap test server.
