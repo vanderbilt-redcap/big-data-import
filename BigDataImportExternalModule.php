@@ -59,7 +59,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $this->log("
         <div>Importing records from CVS file:</div>
-        <div class='remote-project-title'><ul><li>Edoc:".$edoc." " . $doc_name . "</li></ul></div>
+        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>
     ");
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
@@ -171,7 +171,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             ]);
 
             if ($stopEarly) {
-//                $this->resetValues($project_id, $edoc,$id);
+                $this->resetValues($project_id, $edoc,$id);
                 if ($import_email != "") {
                     $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
                     REDCap::email($import_email, 'noreply@vumc.org', 'Import process finished', $email_text);
@@ -183,7 +183,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         }
 
-//        $this->resetValues($project_id, $edoc,$id);
+        $this->resetValues($project_id, $edoc,$id);
         if ($import_email != "") {
             $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.";
             $email_text .= "<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
