@@ -140,7 +140,7 @@
 
 <div id="big-data-module-wrapper">
     <?php
-        $module->cronbigdata();
+//        $module->cronbigdata();
     ?>
     <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
     <br>
