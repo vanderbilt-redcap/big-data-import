@@ -32,8 +32,7 @@
 		{
 			"key": "import-email",
 			"name": "List of emails, <b>separated by commas</b> <br/>to send the notification to once the import has finished",
-			"type": "textarea",
-			"required": "true"
+			"type": "textarea"
 		}
 	],
 	"crons": [

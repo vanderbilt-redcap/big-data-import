@@ -117,15 +117,27 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             for ($line = 1; $line <= $chunks; $line++) {
                 $data_aux = str_getcsv($content[($line + $count)], ",", '"');
                 $aux = array();
+                $instrument = "";
+                $instance = "";
+                $record = $data_aux[0];
                 foreach ($fieldNames as $index => $field) {
-                    $aux[$field] = $data_aux[$index];
-
+                    if($field == "redcap_repeat_instrument") {
+                        $instrument = $data_aux[$index];
+                    }else if($field == "redcap_repeat_instance") {
+                        $instance = $data_aux[$index];
+                    }else{
+                        $aux[$field] = $data_aux[$index];
+                    }
                 }
                 if($repeatable){
-                    $data[($line + $count)] = $aux;
+                    if($instrument != ""){
+                        $data[$record]['repeat_instances'][$event_id][$instrument][$instance] = $aux;
+                    }else{
+                        $data[$record][$event_id] = $aux;
+                    }
                 }else{
-                    $data[($line + $count)] = array();
-                    $data[($line + $count)][$event_id] = $aux;
+                    $data[$record] = array();
+                    $data[$record][$event_id] = $aux;
                 }
             }
 
