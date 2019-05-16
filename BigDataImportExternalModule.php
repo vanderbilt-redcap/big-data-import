@@ -18,22 +18,24 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $_GET['pid'] = $localProjectId;
             try{
                 $import_list = $this->getProjectSetting('import', $localProjectId);
+                $total_import = $this->getProjectSetting('total-import', $localProjectId);
                 foreach ($import_list as $id=>$import){
                     $edoc = $this->getProjectSetting('edoc', $localProjectId)[$id];
                     if ($import && $edoc != "") {
-                        $error = $this->importRecords($localProjectId, $edoc,$id);
+                        $error = $this->importRecords($localProjectId, $edoc,$id,$total_import);
                         if(!$error){
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
                         }else{
                             $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
                         }
-                        $this->log($logtext);
+                        $this->log($logtext,['import' => $total_import]);
                     }
                 }
             }
             catch(Exception $e){
                 $this->log("An error occurred.  Click 'Show Details' for more info.", [
-                    'details' => $e->getMessage() . "\n" . $e->getTraceAsString()
+                    'details' => $e->getMessage() . "\n" . $e->getTraceAsString(),
+                    'import' => $total_import
                 ]);
 
                 $this->sendErrorEmail("An exception occurred while syncing.");
@@ -42,7 +44,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $_GET['pid'] = $originalPid;
     }
 
-    function importRecords($project_id,$edoc,$id){
+    function importRecords($project_id,$edoc,$id,$total_import){
         $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
         $q = db_query($sql);
 
@@ -60,8 +62,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $this->log("
         <div>Importing records from CVS file:</div>
-        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>
-    ");
+        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $total_import]);
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
@@ -168,7 +169,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
             }
             $this->log("Import $message for $batchText $icon", [
-                'details' => json_encode($results, JSON_PRETTY_PRINT)
+                'details' => json_encode($results, JSON_PRETTY_PRINT),
+                'import' => $total_import
             ]);
 
             if ($stopEarly) {

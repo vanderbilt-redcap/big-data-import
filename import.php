@@ -1,3 +1,4 @@
+
 <style>
     #big-data-module-wrapper th{
         font-weight: bold;
@@ -30,8 +31,39 @@
     .fa-times,.fa-exclamation-circle{
         color: red;
     }
+    .dataTables_wrapperm,#big-data-module-wrapper{
+        max-width: 800px;
+    }
+    .odd, tr .odd{
+        background-color: rgba(0,0,0,.05) !important;
+    }
+    .table td, .table th {
+        padding: .75rem !important;
+        vertical-align: top;
+        border-top: 1px solid #dee2e6;
+    }
+    .big-data-import-table{
+        width: 800px !important;
+    }
+    .big-data-import-table .odd{
+        background-color: rgba(0,0,0,.05) !important;
+    }
+    .big-data-import-table .even{
+        background-color: #ffffff !important;
+    }
+    .big-data-import-table thead th, .big-data-import-table table.dataTable thead th, table.dataTable thead td {
+        border:none !important;
+    }
 </style>
 <script>
+    $(document).ready(function() {
+        $('.big-data-import-table').DataTable({
+            ordering: false,
+            bFilter: false,
+            bLengthChange: false,
+            pageLength: 50
+        } );
+    } );
     function fileValidation(fileInput){
         var filePath = fileInput.value;
         var allowedExtensions = /(\.csv)$/i;
@@ -106,12 +138,12 @@
         /***SHOW DETAILS***/
         ExternalModules.Vanderbilt.BigDataImportExternalModule.details = {}
 
-        ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails = function(logId){
+        ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails = function(logId, importdnumber){
             var width = window.innerWidth - 100;
             var height = window.innerHeight - 200;
             var content = '<pre style="max-height: ' + height + 'px">' + this.details[logId] + '</pre>'
 
-            simpleDialog(content, 'Details', null, width)
+            simpleDialog(content, 'Details Import #'+importdnumber, null, width)
         }
 
         ExternalModules.Vanderbilt.BigDataImportExternalModule.showSyncCancellationDetails = function(){
@@ -190,7 +222,7 @@
     <br>
     <h5>Recent Log Entries</h5>
     <p>(refresh the page to see the latest)</p>
-    <table class="table table-striped" style="max-width: 1000px;">
+    <table class="table table-striped big-data-import-table" style="max-width: 1000px;">
         <thead>
         <tr>
             <th style="min-width: 160px;">Date/Time</th>
@@ -202,7 +234,7 @@
         <?php
 
         $results = $module->queryLogs("
-				select log_id, timestamp, message, details
+				select log_id, timestamp, message, details, import
 				order by log_id desc
 				limit 2000
 			");
@@ -218,17 +250,20 @@
             while($row = $results->fetch_assoc()){
                 $logId = $row['log_id'];
                 $details = $row['details'];
+                $import = $row['import'];
                 ?>
                 <tr>
                     <td><?=$row['timestamp']?></td>
                     <td class="message"><?=$row['message']?></td>
                     <td>
                         <?php if(!empty($details)) { ?>
-                            <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?=$logId?>)">Show Details</button>
+                            <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?=$logId?>,<?=$import?>)">Show Details</button>
                             <script>
                                 ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($details)?>
                             </script>
-                        <?php } ?>
+                        <?php }else if(!empty($import)) {  ?>
+                            Import # <?=$import?>
+                        <?php }  ?>
                     </td>
                 </tr>
                 <?php

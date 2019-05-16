@@ -3,6 +3,8 @@
 $import_list = empty($module->getProjectSetting('import'))?array():$module->getProjectSetting('import');
 array_push($import_list,true);
 $module->setProjectSetting('import', $import_list);
+$total_import = $module->getProjectSetting('total-import') + 1;
+$module->setProjectSetting('total-import', $total_import);
 foreach($_FILES as $key=>$value){
     $myfiles[] = $key;
     if ($value) {
