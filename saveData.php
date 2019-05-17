@@ -3,8 +3,14 @@
 $import_list = empty($module->getProjectSetting('import'))?array():$module->getProjectSetting('import');
 array_push($import_list,true);
 $module->setProjectSetting('import', $import_list);
+
 $total_import = $module->getProjectSetting('total-import') + 1;
 $module->setProjectSetting('total-import', $total_import);
+
+$import_number = empty($module->getProjectSetting('import-number'))?array():$module->getProjectSetting('import-number');
+array_push($import_number,$total_import);
+$module->setProjectSetting('import-number', $import_number);
+
 foreach($_FILES as $key=>$value){
     $myfiles[] = $key;
     if ($value) {

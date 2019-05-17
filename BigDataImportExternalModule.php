@@ -18,24 +18,24 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $_GET['pid'] = $localProjectId;
             try{
                 $import_list = $this->getProjectSetting('import', $localProjectId);
-                $total_import = $this->getProjectSetting('total-import', $localProjectId);
                 foreach ($import_list as $id=>$import){
                     $edoc = $this->getProjectSetting('edoc', $localProjectId)[$id];
+                    $import_number = $this->getProjectSetting('import-number', $localProjectId)[$id];
                     if ($import && $edoc != "") {
-                        $error = $this->importRecords($localProjectId, $edoc,$id,$total_import);
+                        $error = $this->importRecords($localProjectId, $edoc,$id,$import_number);
                         if(!$error){
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
                         }else{
                             $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
                         }
-                        $this->log($logtext,['import' => $total_import]);
+                        $this->log($logtext,['import' => $import_number]);
                     }
                 }
             }
             catch(Exception $e){
                 $this->log("An error occurred.  Click 'Show Details' for more info.", [
                     'details' => $e->getMessage() . "\n" . $e->getTraceAsString(),
-                    'import' => $total_import
+                    'import' => $import_number
                 ]);
 
                 $this->sendErrorEmail("An exception occurred while syncing.");
@@ -44,7 +44,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $_GET['pid'] = $originalPid;
     }
 
-    function importRecords($project_id,$edoc,$id,$total_import){
+    function importRecords($project_id,$edoc,$id,$import_number){
         $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
         $q = db_query($sql);
 
@@ -62,7 +62,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $this->log("
         <div>Importing records from CVS file:</div>
-        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $total_import]);
+        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number]);
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
@@ -70,9 +70,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $fieldNamesTotal = $this->csvToArrayNFieldNames($path);
         $content = file($path);
         $fieldNames = explode(",", $content[0]);
-        foreach ($fieldNames as $id=>$name) {
+        foreach ($fieldNames as $idName=>$name) {
             $str = preg_replace('/^[\pZ\p{Cc}\x{feff}]+|[\pZ\p{Cc}\x{feff}]+$/ux', '', $name);
-            $fieldNames[$id] = $str;
+            $fieldNames[$idName] = $str;
         }
 
         // Use the number of fields times number of records as a metric to determine a reasonable chunk size.
@@ -170,23 +170,25 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
             $this->log("Import $message for $batchText $icon", [
                 'details' => json_encode($results, JSON_PRETTY_PRINT),
-                'import' => $total_import
+                'import' => $import_number
             ]);
 
             if ($stopEarly) {
-                $this->resetValues($project_id, $edoc,$id);
+                $this->resetValues($project_id, $edoc);
+                $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.";
+                $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
                 if ($import_email != "") {
-                    $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
-                    REDCap::email($import_email, 'noreply@vumc.org', 'Import process finished', $email_text);
+                     REDCap::email($import_email, 'noreply@vumc.org', 'Import process finished', $email_text);
 
+                }else{
+                    $this->sendErrorEmail($email_text);
                 }
-                $this->sendErrorEmail("REDCap was unable to import some record data.");
                 return true;
             }
 
         }
 
-        $this->resetValues($project_id, $edoc,$id);
+        $this->resetValues($project_id, $edoc);
         if ($import_email != "") {
             $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.";
             $email_text .= "<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
@@ -209,16 +211,18 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         return $results;
     }
 
-    function resetValues($project_id,$edoc,$id){
+    function resetValues($project_id,$edoc){
         $import_list = empty($this->getProjectSetting('import'))?array():$this->getProjectSetting('import');
-        unset($import_list[$id]);
-        $this->setProjectSetting('import', $import_list,$project_id);
-
+        $import_number = $this->getProjectSetting('import-number',$project_id);
         $edoc_list = $this->getProjectSetting('edoc',$project_id);
         if (($key = array_search($edoc, $edoc_list)) !== false) {
             unset($edoc_list[$key]);
+            unset($import_list[$key]);
+            unset($import_number[$key]);
         }
         $this->setProjectSetting('edoc', $edoc_list,$project_id);
+        $this->setProjectSetting('import', $import_list,$project_id);
+        $this->setProjectSetting('import-number', $import_number,$project_id);
         if($edoc != "" && $project_id != ""){
             $sql = "DELETE FROM redcap_edocs_metadata WHERE project_id=".$project_id." AND doc_id=" . $edoc;
             $q = db_query($sql);
