@@ -88,11 +88,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $Proj = new \Project($project_id);
         $event_id = $Proj->firstEventId;
 
-        /*$event_id = $Proj->getEventIdUsingUniqueEventName($matches[1][0]);
-        $var = $matches[1][1];
-        $event_id = ($longitudinal) ? $Proj->getEventIdUsingUniqueEventName($element[$eventNameKey]) : $Proj->firstEventId;
-        */
-
         $sql = "select app_title from redcap_projects where project_id = '".db_escape($project_id)."' limit 1";
         $q = db_query($sql);
         $projectTitle = "";
