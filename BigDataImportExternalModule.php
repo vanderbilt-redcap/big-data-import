@@ -61,7 +61,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
 
         $this->log("
-        <div>Importing records from CVS file:</div>
+        <div>Importing records from CSV file:</div>
         <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number]);
 
         $import_email = $this->getProjectSetting('import-email', $project_id);

@@ -26,7 +26,7 @@
 
 	"no-auth-pages":["configure"],
 
-	"description": "Tool to help import big CVS files without the need to split them.",
+	"description": "Tool to help import big CSV files without the need to split them.",
 
 	"project-settings": [
 		{
@@ -47,7 +47,7 @@
 	"compatibility": {
 		"php-version-min": "5.5.0",
 		"php-version-max": "",
-		"redcap-version-min": "8.6.2",
+		"redcap-version-min": "8.10.1",
 		"redcap-version-max": ""
 	}
 }

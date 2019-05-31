@@ -68,7 +68,7 @@
         var filePath = fileInput.value;
         var allowedExtensions = /(\.csv)$/i;
         if(!allowedExtensions.exec(filePath)){
-            simpleDialog('Please upload a CVS file.', '<span class="error-title">Wrong File</span>', null, 500);
+            simpleDialog('Please upload a CSV file.', '<span class="error-title">Wrong File</span>', null, 500);
             fileInput.value = '';
             $('#import').css('cursor','not-allowed');
             $('#import').prop('disabled',true);
