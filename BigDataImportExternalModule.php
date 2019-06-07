@@ -111,6 +111,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
         $count = 0;
         for ($i = 0; $i < $batchSize; $i++) {
+            $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
             $data = array();
             for ($line = 1; $line <= $chunks; $line++) {
@@ -140,6 +141,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $data[$record] = array();
                     $data[$record][$event_id] = $aux;
                 }
+                $import_records .= $record.", ";
             }
             $count += $chunks;
             $results = \Records::saveData($project_id, 'array', $data, 'normal', 'MDY', 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
@@ -150,12 +152,12 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $message = "completed ";
 
                 if (empty($results['warnings'])) {
-                    $message .= 'successfully';
+                    $message .= 'successfully for';
                 } else {
-                    $message .= 'with warnings';
+                    $message .= 'with warnings for';
                 }
             } else {
-                $message = "did NOT complete successfully";
+                $message = "did NOT complete successfully.<br> Errors in";
                 $stopEarly = true;
             }
 
@@ -163,8 +165,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             if ($stopEarly) {
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
             }
-            $this->log("Import $message for $batchText $icon", [
+            $this->log("Import #$import_number $message $batchText $icon", [
                 'details' => json_encode($results, JSON_PRETTY_PRINT),
+                'recordlist' => rtrim($import_records, ", "),
                 'import' => $import_number
             ]);
 
@@ -173,7 +176,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.";
                 $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
                 if ($import_email != "") {
-                     REDCap::email($import_email, 'noreply@vumc.org', 'Import process finished', $email_text);
+                     REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' has failed', $email_text);
 
                 }else{
                     $this->sendErrorEmail($email_text);
@@ -187,7 +190,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         if ($import_email != "") {
             $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.";
             $email_text .= "<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
-            REDCap::email($import_email, 'noreply@vumc.org', 'Import process finished', $email_text);
+            REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' finished', $email_text);
         }
         return false;
     }

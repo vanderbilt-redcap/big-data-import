@@ -224,14 +224,14 @@
         <tr>
             <th style="min-width: 160px;">Date/Time</th>
             <th>Message</th>
+            <th>Records</th>
             <th style="min-width: 125px;">Details</th>
         </tr>
         </thead>
         <tbody>
         <?php
-
         $results = $module->queryLogs("
-				select log_id, timestamp, message, details, import
+				select log_id, timestamp, message, details, import, recordlist
 				order by log_id desc
 				limit 2000
 			");
@@ -239,7 +239,7 @@
         if($results->num_rows === 0){
             ?>
             <tr>
-                <td colspan="3">No logs available</td>
+                <td colspan="4">No logs available</td>
             </tr>
             <?php
         }
@@ -252,6 +252,7 @@
                 <tr>
                     <td><?=$row['timestamp']?></td>
                     <td class="message"><?=$row['message']?></td>
+                    <td ><?=$row['recordlist']?></td>
                     <td>
                         <?php if(!empty($details)) { ?>
                             <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?=$logId?>,<?=$import?>)">Show Details</button>
