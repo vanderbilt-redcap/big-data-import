@@ -1,5 +1,4 @@
 <?php
-//$module->setProjectSetting('import', true);
 $import_list = empty($module->getProjectSetting('import'))?array():$module->getProjectSetting('import');
 array_push($import_list,true);
 $module->setProjectSetting('import', $import_list);
@@ -36,7 +35,7 @@ foreach($_FILES as $key=>$value){
                 $stored_name = $row['stored_name'];
             }
 
-            \REDCap::logEvent("File submitted via <i>Big Data Import</i> external module","user = ".USERID."\nFile = '".$doc_name."'",null,null,null,$pid);
+            \REDCap::logEvent("File <b>submitted</b> via <i>Big Data Import</i> external module","user = ".USERID."\nFile = '".$doc_name."'",null,null,null,$pid);
         } else {
             header('Content-type: application/json');
             echo json_encode(array(

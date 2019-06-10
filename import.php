@@ -1,4 +1,3 @@
-
 <style>
     #big-data-module-wrapper th{
         font-weight: bold;
@@ -54,13 +53,28 @@
     .big-data-import-table thead th, .big-data-import-table table.dataTable thead th, table.dataTable thead td {
         border:none !important;
     }
+    .btn-cancel{
+        float: right;
+        color: #333;
+        background-color: #fff;
+        border-color: #ccc;
+        font-size: 13px;
+    }
+    .btn-cancel:hover{
+        color: #333;
+        background-color: #e6e6e6;
+        border-color: #adadad;
+    }
 </style>
 <script>
+    var deleteData_url = <?=json_encode($module->getUrl('deleteData.php'))?>;
+    var cancelImport_url = <?=json_encode($module->getUrl('cancelImport.php'))?>;
+    var pid = <?=json_encode($_GET['pid'])?>;
     $(document).ready(function() {
         $('.big-data-import-table').DataTable({
             ordering: false,
             bFilter: false,
-            bLengthChange: false,
+            bLengthChange: true,
             pageLength: 50
         } );
     } );
@@ -116,10 +130,10 @@
                         simpleDialog(data.status+" One or more of the files could not be saved."+JSON.stringify(data), 'Error', null, 500);
                     }else{
                         var url = window.location.href;
-                        if(window.location.href.match(/(&message)/)){
-                            url = window.location.href = window.location.href.replace( /(&message)/, "&message" );
+                        if(url.match(/(&message=)([A-Z]{1})/)){
+                            url = url.replace( /(&message=)([A-Z]{1})/, "&message=S" );
                         }else{
-                            url = window.location.href + "&message";
+                            url = url + "&message=S";
                         }
                         window.location = url;
                     }
@@ -130,6 +144,60 @@
             });
         }
         return false;
+    }
+
+    function deleteAndCancel(edoc){
+        $.ajax({
+            url: deleteData_url,
+            data: "&edoc="+edoc+"&pid="+pid,
+            type: 'POST',
+            success: function(returnData) {
+                var data = JSON.parse(returnData);
+                if (data.status == 'success') {
+                    var url = window.location.href;
+                    if(url.match(/(&message=)([A-Z]{1})/)){
+                        url = url.replace( /(&message=)([A-Z]{1})/, "&message=D" );
+                    }else{
+                        url = url + "&message=D";
+                    }
+                    window.location = url;
+                }else if(data.status == 'import'){
+                    simpleDialog("This file is already importing and can't be deleted. Please use cancel button to cancel the import process.", 'Error', null, 500);
+                }else{
+                    simpleDialog(data.status+" One or more of the files could not be deleted."+JSON.stringify(data), 'Error', null, 500);
+                }
+            },
+            error: function(e) {
+                simpleDialog("One or more of the files could not be saved."+JSON.stringify(e), 'Error', null, 500);
+            }
+        });
+    }
+
+    function cancelImport(){
+        $.ajax({
+            url: cancelImport_url,
+            data: "&edoc="+edoc+"&pid="+pid,
+            type: 'POST',
+            success: function(returnData) {
+                var data = JSON.parse(returnData);
+                if (data.status == 'success') {
+                    var url = window.location.href;
+                    if(url.match(/(&message=)([A-Z]{1})/)){
+                        url = url.replace( /(&message=)([A-Z]{1})/, "&message=D" );
+                    }else{
+                        url = url + "&message=D";
+                    }
+                    window.location = url;
+                }else if(data.status == 'import'){
+                    simpleDialog("This file is already importing and can't be deleted. Please use cancel button to cancel the import process.", 'Error', null, 500);
+                }else{
+                    simpleDialog(data.status+" One or more of the files could not be deleted."+JSON.stringify(data), 'Error', null, 500);
+                }
+            },
+            error: function(e) {
+                simpleDialog("One or more of the files could not be saved."+JSON.stringify(e), 'Error', null, 500);
+            }
+        });
     }
 </script>
 <div id="big-data-info-wrapper">
@@ -169,14 +237,22 @@
 
     </script>
 </div>
-
+<?php
+//$module->setProjectSetting('import', array(0=>1,1=>1));
+//$module->setProjectSetting('import', array());
+//print_array($module->getProjectSetting('edoc',$project_id));
+//print_array($module->getProjectSetting('import',$project_id));
+//print_array($module->getProjectSetting('import-number',$project_id));
+?>
 <div id="big-data-module-wrapper">
     <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
     <br>
     <div>
         <?php
-        if(array_key_exists('message', $_GET)){
+        if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'S'){
             echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been uploaded.<br/>If you have set an email, a message will be sent once the import is ready, if not, refresh this page.</div>';
+        }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'D'){
+            echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been deleted.</div>';
         }
         ?>
         <form method="post" onsubmit="return saveFilesIfTheyExist('<?=$module->getUrl('saveData.php')?>');" id="importForm">
@@ -192,7 +268,7 @@
             <?php
             $edoc_list = $module->getProjectSetting('edoc');
             $docs = "";
-            foreach ($edoc_list as $edoc){
+            foreach ($edoc_list as $index => $edoc){
                 $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
                 $q = db_query($sql);
 
@@ -200,7 +276,7 @@
                     die($sql . ': ' . $error);
                 }
                 while ($row = db_fetch_assoc($q)) {
-                    $docs .= "<div><span class='fa fa-file'></span> ".$row['doc_name']."</div>";
+                    $docs .= "<div style='padding:5px'><span class='fa fa-file'></span> ".$row['doc_name']." <a onclick='deleteAndCancel(".$edoc.")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a></div>";
                 }
             }
 
@@ -217,7 +293,7 @@
     <br>
     <br>
     <br>
-    <h5>Recent Log Entries</h5>
+    <h5>Recent Log Entries <a onclick="cancelImport()" class="btn btn-cancel">Cancel Current Import</a></h5>
     <p>(refresh the page to see the latest)</p>
     <table class="table table-striped big-data-import-table" style="max-width: 1000px;">
         <thead>

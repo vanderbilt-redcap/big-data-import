@@ -22,6 +22,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $edoc = $this->getProjectSetting('edoc', $localProjectId)[$id];
                     $import_number = $this->getProjectSetting('import-number', $localProjectId)[$id];
                     if ($import && $edoc != "") {
+                        $import_list[$id] = false;
+                        $this->setProjectSetting('import', $import_list,$localProjectId);
                         $error = $this->importRecords($localProjectId, $edoc,$id,$import_number);
                         if(!$error){
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
@@ -38,7 +40,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'import' => $import_number
                 ]);
 
-                $this->sendErrorEmail("An exception occurred while syncing.");
+//                $this->sendErrorEmail("An exception occurred while importing.");
             }
         }
         $_GET['pid'] = $originalPid;
@@ -179,7 +181,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                      REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' has failed', $email_text);
 
                 }else{
-                    $this->sendErrorEmail($email_text);
+//                    $this->sendErrorEmail($email_text);
                 }
                 return true;
             }
