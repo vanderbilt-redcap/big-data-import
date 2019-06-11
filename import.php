@@ -354,7 +354,7 @@
         $sql = "SELECT * FROM `redcap_external_modules_log` where project_id=1414 order by log_id desc limit 2000";
         $query = db_query($sql);
         if (db_num_rows($query) > 0) {
-            while ($row = db_fetch_assoc($q)) {
+            while ($row = db_fetch_assoc($query)) {
                 $logId = $row['log_id'];
                 $details = $row['details'];
                 $import = $row['import'];
