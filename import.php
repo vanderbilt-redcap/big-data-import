@@ -388,7 +388,7 @@
         }
     */
         $results = $module->queryLogs("
-				select log_id, timestamp, message, details, import, recordlist
+				select log_id, timestamp, message, import, recordlist
 				where project_id = '".$_GET['pid']."'
 				order by log_id desc
 				limit 2000
@@ -407,8 +407,15 @@
         else{
             while($row = $results->fetch_assoc()){
                 $logId = $row['log_id'];
-                $details = $row['details'];
+//                $details = $row['details'];
                 $import = $row['import'];
+                $result_details = $module->queryLogs("
+				select details
+				where log_id = '".$logId."'");
+                $details = "";
+				if($row_details = $result_details->fetch_assoc()){
+				    $details = $row_details['details'];
+				}
                 ?>
                 <tr>
                     <td><?=$row['timestamp']?></td>
