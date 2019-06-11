@@ -63,7 +63,7 @@
         border-color: #adadad;
     }
     .select-csv {
-        height: 30px;
+        height: 34px;
         padding: 6px 12px;
         font-size: 14px;
         line-height: 1.42857143;
@@ -253,14 +253,6 @@
 
     </script>
 </div>
-<?php
-//$module->setProjectSetting('import', array(0=>1));
-//$module->setProjectSetting('import-number', array());
-
-//print_array($module->getProjectSetting('total-import'));
-//print_array($module->getProjectSetting('import-number'));
-//print_array($module->getProjectSetting('edoc'));
-?>
 <div id="big-data-module-wrapper">
     <div>
         <?php
@@ -351,47 +343,11 @@
         </thead>
         <tbody>
         <?php
-        /*$sql = "SELECT * FROM `redcap_external_modules_log` where project_id=".$_GET['pid']." order by log_id desc limit 2000";
-        $query = db_query($sql);
-        if (db_num_rows($query) > 0) {
-            while ($row = db_fetch_assoc($query)) {
-                $logId = $row['log_id'];
-                $details = $row['details'];
-                $import = $row['import'];
-                ?>
-                <tr>
-                    <td><?=$row['timestamp']?></td>
-                    <td class="message"><?=$row['message']?></td>
-                    <td ><?=$row['recordlist']?></td>
-                    <td>
-                        <?php if(!empty($details)) { ?>
-                            <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?=$logId?>,<?=$import?>)">Show Details</button>
-                            <script>
-                                ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($details)?>
-                            </script>
-                        <?php }else if(!empty($import)) {  ?>
-                            Import # <?=$import?>
-                        <?php }  ?>
-                    </td>
-                </tr>
-                <?php
-            }
-        }else{
-            ?>
-            <tr>
-                <td colspan="4">No logs available</td>
-                <td style="display: none;"></td>
-                <td style="display: none;"></td>
-                <td style="display: none;"></td>
-            </tr>
-            <?php
-        }
-    */
         $results = $module->queryLogs("
 				select log_id, timestamp, message, import, recordlist, details
 				where project_id = '".$_GET['pid']."'
 				order by log_id desc
-				limit 10
+				limit 2000
 			");
 
         if($results->num_rows === 0){
@@ -416,11 +372,11 @@
                     <td ><?=$row['recordlist']?></td>
                     <td>
                         <?php if(!empty($details)) { ?>
-                            <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?=$logId?>,<?=$import?>)">Show Details</button>
-                            <script>
-                                ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($details)?>
-                            </script>
-                        <?php }else if(!empty($import)) {  ?>
+                        <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?=$logId?>,<?=$import?>)">Show Details</button>
+                        <script>
+                            ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($details)?>
+                        </script>
+                        <?php }else  if(!empty($import)) {  ?>
                             Import # <?=$import?>
                         <?php }  ?>
                     </td>

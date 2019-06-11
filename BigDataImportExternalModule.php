@@ -182,11 +182,13 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
 
             $icon = "";
+            $details = "";
             if ($stopEarly) {
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
+                $details = json_encode($results, JSON_PRETTY_PRINT);
             }
             $this->log("Import #$import_number $message $batchText $icon", [
-                'details' => json_encode($results, JSON_PRETTY_PRINT),
+                'details' => $details,
                 'recordlist' => rtrim($import_records, ", "),
                 'import' => $import_number
             ]);
