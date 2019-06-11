@@ -26,7 +26,7 @@
 
 	"no-auth-pages":["configure"],
 
-	"description": "Tool to help import big CSV files without the need to split them.",
+	"description": "Tool to help import one or more big CSV files without the need to split them.",
 
 	"project-settings": [
 		{

@@ -19,10 +19,8 @@
     }
     .pendingFile{padding:10px 0px;}
     .pendingFile,pendingFile a,.pendingFile a:active,.pendingFile a:hover,.pendingFile a:visited{
-        text-decoration:underline;
         padding-right: 30px;
         color:#007bff !important;
-        cursor:pointer;
     }
     .fa-check{
         color: green;
@@ -63,6 +61,22 @@
         color: #333;
         background-color: #e6e6e6;
         border-color: #adadad;
+    }
+    .select-csv {
+        height: 30px;
+        padding: 6px 12px;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #555;
+        background-color: #fff;
+        background-image: none;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+        -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+        -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
     }
 </style>
 <script>
@@ -114,6 +128,7 @@
         for (var name in files) {
             lengthOfFiles++;
             formData.append(name, files[name]);   // filename agnostic
+            formData.append('csvDelimiter', $('#csvDelimiter option:selected').val());   // filename agnostic
         }
         if (lengthOfFiles > 0) {
             $.ajax({
@@ -152,6 +167,7 @@
             type: 'POST',
             success: function(returnData) {
                 var data = JSON.parse(returnData);
+                console.log(data)
                 if (data.status == 'success') {
                     var url = window.location.href;
                     if(url.match(/(&message=)([A-Z]{1})/)){
@@ -163,7 +179,7 @@
                 }else if(data.status == 'import'){
                     simpleDialog("This file is already importing and can't be deleted. Please use cancel button to cancel the import process.", 'Error', null, 500);
                 }else{
-                    simpleDialog(data.status+" One or more of the files could not be deleted."+JSON.stringify(data), 'Error', null, 500);
+                    simpleDialog("status1: "+data.status+" One or more of the files could not be deleted."+JSON.stringify(data), 'Error', null, 500);
                 }
             },
             error: function(e) {
@@ -173,11 +189,13 @@
     }
 
     function cancelImport(){
+        $("#spinner").addClass('fa fa-fw fa-spinner fa-spin');
         $.ajax({
             url: cancelImport_url,
             data: "&pid="+pid,
             type: 'POST',
             success: function(returnData) {
+                $("#spinner").removeClass('fa fa-fw fa-spinner fa-spin');
                 var data = JSON.parse(returnData);
                 if (data.status == 'success') {
                     var url = window.location.href;
@@ -192,6 +210,7 @@
                 }
             },
             error: function(e) {
+                $("#spinner").removeClass('fa fa-fw fa-spinner fa-spin');
                 simpleDialog("One or more of the files could not be saved."+JSON.stringify(e), 'Error', null, 500);
             }
         });
@@ -234,9 +253,15 @@
 
     </script>
 </div>
+<?php
+//$module->setProjectSetting('import', array(0=>1));
+//$module->setProjectSetting('import-number', array());
+
+//print_array($module->getProjectSetting('total-import'));
+//print_array($module->getProjectSetting('import-number'));
+//print_array($module->getProjectSetting('edoc'));
+?>
 <div id="big-data-module-wrapper">
-    <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
-    <br>
     <div>
         <?php
         if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'S'){
@@ -247,19 +272,40 @@
             echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #fff3cd;border-color: #ffeeba !important;color: #856404;">The import has been canceled and the imported file deleted.</div>';
         }
         ?>
+    <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
+    <br/>
+    <p>Tool to help import one or more big CSV files without the need to split them.</p>
+    <p>Refresh the page to see the changes and logs.</p>
+    <br/>
+    <div>
         <form method="post" onsubmit="return saveFilesIfTheyExist('<?=$module->getUrl('saveData.php')?>');" id="importForm">
-            <label style="padding-right: 30px;">Select a CSV file to import:</label>
-            <input type="file" id="importFile" onchange="return fileValidation(this)">
-            <input type="submit" id="import" class="btn" style="color: #fff;background-color: #007bff;border-color: #007bff;cursor:not-allowed" disabled>
+            <div style="padding-bottom: 12px">
+                <label style="padding-right: 30px;">Set CSV delimiter character:</label>
+                <select name="csvDelimiter" id="csvDelimiter" class="select-csv">
+                    <option value="," selected="selected">, (comma) - default</option>
+                    <option value="tab">tab</option>
+                    <option value=";">; (semi-colon)</option>
+                    <option value="|">| (pipe)</option>
+                    <option value="^">^ (caret)</option>
+                </select>
+            </div>
+            <div style="padding-bottom: 12px">
+                <label style="padding-right: 30px;">Select a CSV file to import:</label>
+                <input type="file" id="importFile" onchange="return fileValidation(this)">
+                <input type="submit" id="import" class="btn" style="color: #fff;background-color: #007bff;border-color: #007bff;cursor:not-allowed" disabled>
+            </div>
         </form>
 
     </div>
     <div>
-            <div class="pendingFile accordion_pointer"><span class="fa fa-clock fa-fw"></span> <a onclick="$('#modal-data-upload-confirmation').show()" data-toggle="collapse" data-target='#accordion'>Click here to check pending files </a></div>
-            <div id='accordion' class='alert alert-primary collapse' style='border:1px solid #b8daff !important;max-width: 500px'>
+            <div class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
+            <div class='alert alert-primary' style='border:1px solid #b8daff !important;max-width: 800px'>
             <?php
             $edoc_list = $module->getProjectSetting('edoc');
+            $import_cancel = $module->getProjectSetting('import-cancel');
+            $import = $module->getProjectSetting('import');
             $docs = "";
+            $count_file = 0;
             foreach ($edoc_list as $index => $edoc){
                 $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
                 $q = db_query($sql);
@@ -268,7 +314,14 @@
                     die($sql . ': ' . $error);
                 }
                 while ($row = db_fetch_assoc($q)) {
-                    $docs .= "<div style='padding:5px'><span class='fa fa-file'></span> ".$row['doc_name']." <a onclick='deleteAndCancel(".$edoc.")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a></div>";
+                    if(!$import_cancel[$index]) {
+                        $count_file++;
+                        $icon = "";
+                        if(!$import[$index]){
+                            $icon = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
+                        }
+                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] . " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span>".$icon."</a></div>";
+                    }
                 }
             }
 
@@ -285,7 +338,7 @@
     <br>
     <br>
     <br>
-    <h5 style="max-width: 800px;">Recent Log Entries <span><a onclick="cancelImport()" class="btn btn-cancel" style="float: right;">Cancel Current Import</a></span></h5>
+    <h5 style="max-width: 800px;">Recent Log Entries <span><a onclick="cancelImport()" class="btn btn-cancel" style="float: right;"><span id="spinner"></span> Cancel Current Import</a></span></h5>
     <p>(refresh the page to see the latest)</p>
     <table class="table table-striped big-data-import-table" style="max-width: 1000px;">
         <thead>
@@ -301,13 +354,16 @@
         $results = $module->queryLogs("
 				select log_id, timestamp, message, details, import, recordlist
 				order by log_id desc
-				limit 2000
+				limit 1500
 			");
 
         if($results->num_rows === 0){
             ?>
             <tr>
                 <td colspan="4">No logs available</td>
+                <td style="display: none;"></td>
+                <td style="display: none;"></td>
+                <td style="display: none;"></td>
             </tr>
             <?php
         }

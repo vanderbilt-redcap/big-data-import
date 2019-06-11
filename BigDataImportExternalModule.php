@@ -72,7 +72,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
         $path = EDOC_PATH.$stored_name;
-        $fieldNamesTotal = $this->csvToArrayNFieldNames($path);
+        $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$id);
         $content = file($path);
         $fieldNames = explode(",", $content[0]);
         foreach ($fieldNames as $idName=>$name) {
@@ -222,17 +222,21 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_list = empty($this->getProjectSetting('import'))?array():$this->getProjectSetting('import');
         $import_number = $this->getProjectSetting('import-number',$project_id);
         $import_cancel = $this->getProjectSetting('import-cancel',$project_id);
+        $import_delimiter =$this->getProjectSetting('import-delimiter');
         $edoc_list = $this->getProjectSetting('edoc',$project_id);
         if (($key = array_search($edoc, $edoc_list)) !== false) {
             unset($edoc_list[$key]);
             unset($import_list[$key]);
             unset($import_number[$key]);
             unset($import_cancel[$key]);
+            unset($import_delimiter[$key]);
         }
         $this->setProjectSetting('edoc', $edoc_list,$project_id);
         $this->setProjectSetting('import', $import_list,$project_id);
         $this->setProjectSetting('import-number', $import_number,$project_id);
         $this->setProjectSetting('import-cancel', $import_cancel,$project_id);
+        $this->setProjectSetting('import-delimiter', $import_delimiter,$project_id);
+
         if($edoc != "" && $project_id != ""){
             $sql = "DELETE FROM redcap_edocs_metadata WHERE project_id=".$project_id." AND doc_id=" . $edoc;
             $q = db_query($sql);
@@ -299,8 +303,13 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         return $doc_name;
     }
 
-    function csvToArrayNFieldNames($path)
+    function csvToArrayNFieldNames($path,$id)
     {
+        $delimiter = $this->getProjectSetting('import-delimiter')[$id];
+        if($delimiter == ""){
+            $delimiter = " ,";
+        }
+
         // Add CSV string to memory file so we can parse it into an array
         $h = fopen('php://memory', "x+");
         fwrite($h, file_get_contents($path));
@@ -308,9 +317,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         // Now read the CSV file into an array
         $data = 0;
         $csv_headers = null;
-       $row = fgetcsv($h, 0, ",");
+        $row = fgetcsv($h, 0, $delimiter);
 
-       $data = count($row);
+        $data = count($row);
 
         fclose($h);
         unset($csv_headers, $row);

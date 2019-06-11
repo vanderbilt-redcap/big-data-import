@@ -14,6 +14,10 @@ $import_number = empty($module->getProjectSetting('import-number'))?array():$mod
 array_push($import_number,$total_import);
 $module->setProjectSetting('import-number', $import_number);
 
+$import_delimiter = empty($module->getProjectSetting('import-delimiter'))?array():$module->getProjectSetting('import-delimiter');
+array_push($import_delimiter,$_REQUEST['csvDelimiter']);
+$module->setProjectSetting('import-delimiter', $import_delimiter);
+
 foreach($_FILES as $key=>$value){
     $myfiles[] = $key;
     if ($value) {

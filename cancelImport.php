@@ -4,7 +4,7 @@ $project_id = $_POST['pid'];
 $import_cancel = $module->getProjectSetting('import-cancel', $project_id);
 
 $edoc_list = $module->getProjectSetting('edoc');
-//$module->resetValues($project_id,array_pop(array_reverse($edoc_list)));
+
 $edoc = array_pop(array_reverse($edoc_list));
 if (($key = array_search($edoc, $edoc_list)) !== false) {
     $import_cancel[$key] = true;

@@ -1,9 +1,9 @@
 <?php
 $edoc = $_POST['edoc'];
 $project_id = $_POST['pid'];
-
+$status = "success";
 if ($edoc) {
-    $import =$module->getProjectSetting('import');
+    $import = $module->getProjectSetting('import');
     $edoc_list = $module->getProjectSetting('edoc');
 
     $index = "";
@@ -25,20 +25,16 @@ if ($edoc) {
 
         $module->resetValues($project_id,$edoc);
     }else{
-        header('Content-type: application/json');
-        echo json_encode(array(
-            'status' => "import"
-        ));
+        $status = "import";
     }
 } else {
-    header('Content-type: application/json');
     echo json_encode(array(
-        'status' => "You could not delete a file properly."
+        'status' => "You could not delete a file properly.",
     ));
 }
 
 echo json_encode(array(
-        'status' =>'success'
+        'status' =>$status
     )
 );
 
