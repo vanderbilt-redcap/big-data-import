@@ -351,7 +351,7 @@
         </thead>
         <tbody>
         <?php
-        $sql = "SELECT * FROM `redcap_external_modules_log` where project_id=".$_GET['pid']." order by log_id desc limit 2000";
+        /*$sql = "SELECT * FROM `redcap_external_modules_log` where project_id=".$_GET['pid']." order by log_id desc limit 2000";
         $query = db_query($sql);
         if (db_num_rows($query) > 0) {
             while ($row = db_fetch_assoc($query)) {
@@ -385,6 +385,48 @@
                 <td style="display: none;"></td>
             </tr>
             <?php
+        }
+    */
+        $results = $module->queryLogs("
+				select log_id, timestamp, message, details, import, recordlist
+				where project_id = '".$_GET['pid']."'
+				order by log_id desc
+				limit 2000
+			");
+
+        if($results->num_rows === 0){
+            ?>
+            <tr>
+                <td colspan="4">No logs available</td>
+                <td style="display: none;"></td>
+                <td style="display: none;"></td>
+                <td style="display: none;"></td>
+            </tr>
+            <?php
+        }
+        else{
+            while($row = $results->fetch_assoc()){
+                $logId = $row['log_id'];
+                $details = $row['details'];
+                $import = $row['import'];
+                ?>
+                <tr>
+                    <td><?=$row['timestamp']?></td>
+                    <td class="message"><?=$row['message']?></td>
+                    <td ><?=$row['recordlist']?></td>
+                    <td>
+                        <?php if(!empty($details)) { ?>
+                            <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?=$logId?>,<?=$import?>)">Show Details</button>
+                            <script>
+                                ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($details)?>
+                            </script>
+                        <?php }else if(!empty($import)) {  ?>
+                            Import # <?=$import?>
+                        <?php }  ?>
+                    </td>
+                </tr>
+                <?php
+            }
         }
         ?>
         </tbody>
