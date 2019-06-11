@@ -11,7 +11,7 @@
 		}
 	],
 
-	"permissions": [],
+	"permissions": ["hook_every_page_before_render"],
 
 	"links": {
 		"project": [

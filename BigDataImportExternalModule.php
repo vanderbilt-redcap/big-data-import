@@ -49,6 +49,19 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $_GET['pid'] = $originalPid;
     }
 
+    function hook_every_page_before_render($project_id = null){
+        if((strpos($_SERVER['REQUEST_URI'],'delete_project.php') !== false && $_POST['action'] == 'delete') || (strpos($_SERVER['REQUEST_URI'],'erase_project_data.php') !== false && $_POST['action'] == 'erase_data')){
+            #Button: Delete the project OR Button: Erase all data
+            $this->removeLogs("project_id = $project_id");
+            $this->setProjectSetting('edoc', array());
+            $this->setProjectSetting('total-import', '');
+            $this->setProjectSetting('import', array());
+            $this->setProjectSetting('import-number', array());
+            $this->setProjectSetting('import-cancel', array());
+            $this->setProjectSetting('import-delimiter', array());
+        }
+    }
+
     function importRecords($project_id,$edoc,$id,$import_number){
         $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
         $q = db_query($sql);
