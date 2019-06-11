@@ -3,6 +3,10 @@ $import_list = empty($module->getProjectSetting('import'))?array():$module->getP
 array_push($import_list,true);
 $module->setProjectSetting('import', $import_list);
 
+$import_cancel = empty($module->getProjectSetting('import-cancel'))?array():$module->getProjectSetting('import-cancel');
+array_push($import_cancel,false);
+$module->setProjectSetting('import-cancel', $import_cancel);
+
 $total_import = $module->getProjectSetting('total-import') + 1;
 $module->setProjectSetting('total-import', $total_import);
 
@@ -20,22 +24,7 @@ foreach($_FILES as $key=>$value){
             array_push($edoc_list,$edoc);
             $module->setProjectSetting('edoc', $edoc_list);
 
-            $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
-            $q = db_query($sql);
-
-            if ($error = db_error()) {
-                echo $sql . ': ' . $error;
-                $this->exitAfterHook();
-            }
-
-            $stored_name = "";
-            $doc_name = "";
-            while ($row = db_fetch_assoc($q)) {
-                $doc_name = $row['doc_name'];
-                $stored_name = $row['stored_name'];
-            }
-
-            \REDCap::logEvent("File <b>submitted</b> via <i>Big Data Import</i> external module","user = ".USERID."\nFile = '".$doc_name."'",null,null,null,$pid);
+            \REDCap::logEvent("File <b>submitted</b> via <i>Big Data Import</i> external module","user = ".USERID."\nFile = '".$module->getDocName($edoc)."'",null,null,null,$pid);
         } else {
             header('Content-type: application/json');
             echo json_encode(array(

@@ -40,7 +40,10 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'import' => $import_number
                 ]);
 
-//                $this->sendErrorEmail("An exception occurred while importing.");
+                $import_email = $this->getProjectSetting('import-email', $localProjectId);
+                if ($import_email != "") {
+                    REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' has failed.', "An exception occurred while importing.");
+                }
             }
         }
         $_GET['pid'] = $originalPid;
@@ -180,9 +183,13 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 if ($import_email != "") {
                      REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' has failed', $email_text);
 
-                }else{
-//                    $this->sendErrorEmail($email_text);
                 }
+                return true;
+            }
+            $import_cancel = $this->getProjectSetting('import-cancel', $project_id)[$id];
+            if($import_cancel){
+                $this->log("Import #$import_number cancelled <span class='fa fa-ban  fa-fw'></span>", ['import' => $import_number]);
+                $this->resetValues($project_id, $edoc);
                 return true;
             }
 
@@ -214,15 +221,18 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     function resetValues($project_id,$edoc){
         $import_list = empty($this->getProjectSetting('import'))?array():$this->getProjectSetting('import');
         $import_number = $this->getProjectSetting('import-number',$project_id);
+        $import_cancel = $this->getProjectSetting('import-cancel',$project_id);
         $edoc_list = $this->getProjectSetting('edoc',$project_id);
         if (($key = array_search($edoc, $edoc_list)) !== false) {
             unset($edoc_list[$key]);
             unset($import_list[$key]);
             unset($import_number[$key]);
+            unset($import_cancel[$key]);
         }
         $this->setProjectSetting('edoc', $edoc_list,$project_id);
         $this->setProjectSetting('import', $import_list,$project_id);
         $this->setProjectSetting('import-number', $import_number,$project_id);
+        $this->setProjectSetting('import-cancel', $import_cancel,$project_id);
         if($edoc != "" && $project_id != ""){
             $sql = "DELETE FROM redcap_edocs_metadata WHERE project_id=".$project_id." AND doc_id=" . $edoc;
             $q = db_query($sql);
@@ -270,6 +280,23 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             "REDCap Big data import Module Error",
             $message
         );
+    }
+
+    function getDocName($edoc){
+        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+        $q = db_query($sql);
+
+        if ($error = db_error()) {
+            echo $sql . ': ' . $error;
+            $this->exitAfterHook();
+        }
+
+        $doc_name = "";
+        while ($row = db_fetch_assoc($q)) {
+            $doc_name = $row['doc_name'];
+        }
+
+        return $doc_name;
     }
 
     function csvToArrayNFieldNames($path)

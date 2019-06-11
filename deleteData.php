@@ -21,22 +21,7 @@ if ($edoc) {
         }
         $module->setProjectSetting('import-number', $import_number);
 
-        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
-        $q = db_query($sql);
-
-        if ($error = db_error()) {
-            echo $sql . ': ' . $error;
-            $this->exitAfterHook();
-        }
-
-        $stored_name = "";
-        $doc_name = "";
-        while ($row = db_fetch_assoc($q)) {
-            $doc_name = $row['doc_name'];
-            $stored_name = $row['stored_name'];
-        }
-
-        \REDCap::logEvent("File <b>deleted</b> via <i>Big Data Import</i> external module","user = ".USERID."\nFile = '".$doc_name."'",null,null,null,$project_id);
+        \REDCap::logEvent("File <b>deleted</b> via <i>Big Data Import</i> external module","user = ".USERID."\nFile = '".$module->getDocName($edoc)."'",null,null,null,$project_id);
 
         $module->resetValues($project_id,$edoc);
     }else{

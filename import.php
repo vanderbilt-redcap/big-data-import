@@ -27,7 +27,7 @@
     .fa-check{
         color: green;
     }
-    .fa-times,.fa-exclamation-circle{
+    .fa-times,.fa-exclamation-circle, .fa-ban{
         color: red;
     }
     .dataTables_wrapperm,#big-data-module-wrapper{
@@ -54,7 +54,6 @@
         border:none !important;
     }
     .btn-cancel{
-        float: right;
         color: #333;
         background-color: #fff;
         border-color: #ccc;
@@ -176,20 +175,18 @@
     function cancelImport(){
         $.ajax({
             url: cancelImport_url,
-            data: "&edoc="+edoc+"&pid="+pid,
+            data: "&pid="+pid,
             type: 'POST',
             success: function(returnData) {
                 var data = JSON.parse(returnData);
                 if (data.status == 'success') {
                     var url = window.location.href;
                     if(url.match(/(&message=)([A-Z]{1})/)){
-                        url = url.replace( /(&message=)([A-Z]{1})/, "&message=D" );
+                        url = url.replace( /(&message=)([A-Z]{1})/, "&message=C" );
                     }else{
-                        url = url + "&message=D";
+                        url = url + "&message=C";
                     }
                     window.location = url;
-                }else if(data.status == 'import'){
-                    simpleDialog("This file is already importing and can't be deleted. Please use cancel button to cancel the import process.", 'Error', null, 500);
                 }else{
                     simpleDialog(data.status+" One or more of the files could not be deleted."+JSON.stringify(data), 'Error', null, 500);
                 }
@@ -237,13 +234,6 @@
 
     </script>
 </div>
-<?php
-//$module->setProjectSetting('import', array(0=>1,1=>1));
-//$module->setProjectSetting('import', array());
-//print_array($module->getProjectSetting('edoc',$project_id));
-//print_array($module->getProjectSetting('import',$project_id));
-//print_array($module->getProjectSetting('import-number',$project_id));
-?>
 <div id="big-data-module-wrapper">
     <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
     <br>
@@ -253,6 +243,8 @@
             echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been uploaded.<br/>If you have set an email, a message will be sent once the import is ready, if not, refresh this page.</div>';
         }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'D'){
             echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been deleted.</div>';
+        }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'C'){
+            echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #fff3cd;border-color: #ffeeba !important;color: #856404;">The import has been canceled and the imported file deleted.</div>';
         }
         ?>
         <form method="post" onsubmit="return saveFilesIfTheyExist('<?=$module->getUrl('saveData.php')?>');" id="importForm">
@@ -293,7 +285,7 @@
     <br>
     <br>
     <br>
-    <h5>Recent Log Entries <a onclick="cancelImport()" class="btn btn-cancel">Cancel Current Import</a></h5>
+    <h5 style="max-width: 800px;">Recent Log Entries <span><a onclick="cancelImport()" class="btn btn-cancel" style="float: right;">Cancel Current Import</a></span></h5>
     <p>(refresh the page to see the latest)</p>
     <table class="table table-striped big-data-import-table" style="max-width: 1000px;">
         <thead>
