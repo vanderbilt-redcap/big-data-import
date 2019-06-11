@@ -159,7 +159,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $data[$record] = array();
                     $data[$record][$event_id] = $aux;
                 }
-                $import_records .= $record.", ";
+                if(strpos($import_records,$record) === false){
+                    $import_records .= $record.", ";
+                }
             }
             $count += $chunks;
             $results = \Records::saveData($project_id, 'array', $data, 'normal', 'MDY', 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
