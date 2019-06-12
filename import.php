@@ -308,11 +308,11 @@
                 while ($row = db_fetch_assoc($q)) {
                     if(!$import_cancel[$index]) {
                         $count_file++;
-                        $icon = "";
+                        $delete = "<a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
                         if(!$import[$index]){
-                            $icon = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
+                            $delete = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
                         }
-                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] . " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span>".$icon."</a></div>";
+                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."</div>";
                     }
                 }
             }
