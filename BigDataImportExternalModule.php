@@ -85,7 +85,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
         $path = EDOC_PATH.$stored_name;
-        $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$id);
+        $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$project_id,$id);
         $content = file($path);
         $fieldNames = explode(",", $content[0]);
         foreach ($fieldNames as $idName=>$name) {
@@ -320,9 +320,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         return $doc_name;
     }
 
-    function csvToArrayNFieldNames($path,$id)
+    function csvToArrayNFieldNames($path,$project_id,$id)
     {
-        $delimiter = $this->getProjectSetting('import-delimiter')[$id];
+        $delimiter = $this->getProjectSetting('import-delimiter',$project_id)[$id];
         if($delimiter == ""){
             $delimiter = " ,";
         }
