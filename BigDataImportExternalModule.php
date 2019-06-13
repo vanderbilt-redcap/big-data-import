@@ -79,13 +79,17 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
 
         $delimiter = $this->getProjectSetting('import-delimiter',$project_id)[$id];
+        $delimiter_text = $delimiter;
         if($delimiter == ""){
             $delimiter = " ,";
+            $delimiter_text = $delimiter;
+        }else if($delimiter == "tab"){
+            $delimiter = "\t";
         }
 
         $this->log("
         <div>Importing records from CSV file:</div>
-        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter]);
+        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
