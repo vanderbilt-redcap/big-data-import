@@ -308,7 +308,7 @@
                 while ($row = db_fetch_assoc($q)) {
                     if(!$import_cancel[$index]) {
                         $count_file++;
-                        $delete = "<a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
+                        $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
                         if(!$import[$index]){
                             $delete = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
                         }
