@@ -344,7 +344,7 @@
         <tbody>
         <?php
         $results = $module->queryLogs("
-				select log_id, timestamp, message, import, recordlist, details
+				select log_id, timestamp, message, import,delimiter, recordlist, details
 				where project_id = '".$_GET['pid']."'
 				order by log_id desc
 				limit 2000
@@ -365,6 +365,7 @@
                 $logId = $row['log_id'];
                 $details = $row['details'];
                 $import = $row['import'];
+                $delimiter = $row['delimiter'];
                 ?>
                 <tr>
                     <td><?=$row['timestamp']?></td>
@@ -377,7 +378,10 @@
                             ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($details)?>
                         </script>
                         <?php }else  if(!empty($import)) {  ?>
-                            Import # <?=$import?>
+                            <div>Import #<?=$import?></div>
+                            <?php if(!empty($delimiter)){ ?>
+                                <div>Delimiter: <?=$delimiter?></div>
+                            <?php }  ?>
                         <?php }  ?>
                     </td>
                 </tr>

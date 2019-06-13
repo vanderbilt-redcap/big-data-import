@@ -78,16 +78,21 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $stored_name = $row['stored_name'];
         }
 
+        $delimiter = $this->getProjectSetting('import-delimiter',$project_id)[$id];
+        if($delimiter == ""){
+            $delimiter = " ,";
+        }
+
         $this->log("
         <div>Importing records from CSV file:</div>
-        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number]);
+        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter]);
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
         $path = EDOC_PATH.$stored_name;
-        $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$project_id,$id);
+        $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$delimiter);
         $content = file($path);
-        $fieldNames = explode(",", $content[0]);
+        $fieldNames = explode($delimiter, $content[0]);
         foreach ($fieldNames as $idName=>$name) {
             $str = preg_replace('/^[\pZ\p{Cc}\x{feff}]+|[\pZ\p{Cc}\x{feff}]+$/ux', '', $name);
             $fieldNames[$idName] = $str;
@@ -133,7 +138,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
             $data = array();
             for ($line = 1; $line <= $chunks; $line++) {
-                $data_aux = str_getcsv($content[($line + $count)], ",", '"');
+                $data_aux = str_getcsv($content[($line + $count)], $delimiter, '"');
                 $aux = array();
                 $instrument = "";
                 $instance = "";
@@ -320,13 +325,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         return $doc_name;
     }
 
-    function csvToArrayNFieldNames($path,$project_id,$id)
+    function csvToArrayNFieldNames($path,$delimiter)
     {
-        $delimiter = $this->getProjectSetting('import-delimiter',$project_id)[$id];
-        if($delimiter == ""){
-            $delimiter = " ,";
-        }
-
         // Add CSV string to memory file so we can parse it into an array
         $h = fopen('php://memory', "x+");
         fwrite($h, file_get_contents($path));
