@@ -253,6 +253,11 @@
 
     </script>
 </div>
+<?php
+print_array($module->getProjectSetting('import'));
+print_array($module->getProjectSetting('edoc'));
+print_array($module->getProjectSetting('import-cancel'));
+?>
 <div id="big-data-module-wrapper">
     <div>
         <?php
@@ -266,8 +271,8 @@
         ?>
     <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
     <br/>
-    <p>Tool to help import one or more big CSV files without the need to split them.</p>
-    <p>Refresh the page to see the changes and logs.</p>
+    <p>This tool helps import one or more big CSV files without the need to split them.</p>
+    <p style="color: red;font-style: italic">Note: this page does not refresh itself. To see the status of the import you will need to refresh the browser window.</p>
     <br/>
     <div>
         <form method="post" onsubmit="return saveFilesIfTheyExist('<?=$module->getUrl('saveData.php')?>');" id="importForm">
