@@ -21,6 +21,9 @@ if ($edoc) {
         $import_list[$index] = true;
         $module->setProjectSetting('import', $import_list);
 
+        $import_number = $module->getProjectSetting('import-number');
+        $import_number_current = $import_number[$index];
+
         \REDCap::logEvent("<b>Continue file Import</b> via <i>Big Data Import</i> external module\n <b>Import #".$import_number_current."</b>","user = ".USERID."\nFile = '".$module->getDocName($edoc)."'\nImport = ".$import_number_current,null,null,null,$project_id);
     }else{
         $status = "import";
