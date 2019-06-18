@@ -14,14 +14,15 @@ if ($edoc) {
         $total_import = $module->getProjectSetting('total-import') - 1;
         $module->setProjectSetting('total-import', $total_import);
 
-        $import_number =$module->getProjectSetting('import-number');
+        $import_number = $module->getProjectSetting('import-number');
+        $import_number_current = $import_number[$index];
 
         for($i=$index; $i<=(count($edoc_list)-1); $i++){
             $import_number[$i] = $import_number[$i] - 1;
         }
         $module->setProjectSetting('import-number', $import_number);
 
-        \REDCap::logEvent("File <b>deleted</b> via <i>Big Data Import</i> external module","user = ".USERID."\nFile = '".$module->getDocName($edoc)."'",null,null,null,$project_id);
+        \REDCap::logEvent("File <b>deleted</b> via <i>Big Data Import</i> external module\n <b>Import #".$import_number_current."</b>","user = ".USERID."\nFile = '".$module->getDocName($edoc)."'\nImport = ".$import_number_current,null,null,null,$project_id);
 
         $module->resetValues($project_id,$edoc);
     }else{
@@ -29,7 +30,7 @@ if ($edoc) {
     }
 } else {
     echo json_encode(array(
-        'status' => "You could not delete a file properly.",
+        'status' => "You could not delete a file properly."
     ));
 }
 

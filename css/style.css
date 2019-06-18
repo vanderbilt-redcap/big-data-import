@@ -1,0 +1,95 @@
+#big-data-module-wrapper th{
+    font-weight: bold;
+}
+
+#big-data-module-wrapper .remote-project-title{
+    margin-top: 5px;
+    margin-left: 15px;
+    font-weight: bold;
+}
+
+#big-data-module-wrapper td.message{
+    max-width: 800px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.error-title{
+    color: #a94442;
+}
+.pendingFile{padding:10px 0px;}
+.pendingFile,pendingFile a,.pendingFile a:active,.pendingFile a:hover,.pendingFile a:visited{
+    padding-right: 30px;
+    color:#007bff !important;
+}
+.fa-check{
+    color: green;
+}
+.fa-times,.fa-exclamation-circle, .fa-ban{
+    color: red;
+}
+.dataTables_wrapperm,#big-data-module-wrapper{
+    max-width: 800px;
+}
+.odd, tr .odd{
+    background-color: rgba(0,0,0,.05) !important;
+}
+.table td, .table th {
+    padding: .75rem !important;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+.big-data-import-table{
+    width: 800px !important;
+}
+.big-data-import-table .odd{
+    background-color: rgba(0,0,0,.05) !important;
+}
+.big-data-import-table .even{
+    background-color: #ffffff !important;
+}
+.big-data-import-table thead th, .big-data-import-table table.dataTable thead th, table.dataTable thead td {
+    border:none !important;
+}
+.btn-cancel{
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+    font-size: 13px;
+}
+.btn-cancel:hover{
+    color: #333;
+    background-color: #e6e6e6;
+    border-color: #adadad;
+}
+.btn-error{
+    color: #fff !important;
+    background-color: #dc3545;
+    border-color: #dc3545;
+    font-size: 13px;
+}
+.btn-error:hover{
+    color: #fff !important;
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+.select-csv {
+    height: 34px;
+    padding: 6px 12px;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+}
+.modal-header .close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
