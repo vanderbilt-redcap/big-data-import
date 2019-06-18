@@ -22,8 +22,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $edoc = $this->getProjectSetting('edoc', $localProjectId)[$id];
                     $import_number = $this->getProjectSetting('import-number', $localProjectId)[$id];
                     if ($import && $edoc != "") {
-                        $import_list[$id] = false;
-                        $this->setProjectSetting('import', $import_list,$localProjectId);
+                        $import_started = $this->getProjectSetting('import', $localProjectId);
+                        $import_started[$id] = false;
+                        $this->setProjectSetting('import', $import_started,$localProjectId);
                         $error = $this->importRecords($localProjectId, $edoc,$id,$import_number);
                         if(!$error){
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
