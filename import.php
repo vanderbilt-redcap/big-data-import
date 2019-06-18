@@ -5,6 +5,8 @@
     var deleteData_url = <?=json_encode($module->getUrl('deleteData.php'))?>;
     var cancelImport_url = <?=json_encode($module->getUrl('cancelImport.php'))?>;
     var deleteLogs_url = <?=json_encode($module->getUrl('deleteLogs.php'))?>;
+    var continueImport_url = <?=json_encode($module->getUrl('continueImport.php'))?>;
+    var anyFilesWithChecks_url = <?=json_encode($module->getUrl('anyFilesWithChecks.php'))?>;
     var pid = <?=json_encode($_GET['pid'])?>;
     $(document).ready(function() {
         $('.big-data-import-table').DataTable({
@@ -82,85 +84,140 @@
     </script>
 </div>
 <?php
+//$module->setProjectSetting('import',array());
+//$module->setProjectSetting('import-continue',array());
+//
 //print_array($module->getProjectSetting('import'));
 //print_array($module->getProjectSetting('edoc'));
-//print_array($module->getProjectSetting('import-cancel'));
+//print_array($module->getProjectSetting('import-checked'));
+//print_array($module->getProjectSetting('import-checked-started'));
+//print_array($module->getProjectSetting('import-continue'));
 ?>
 <div id="big-data-module-wrapper">
     <div>
-        <?php
-        if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'S'){
-            echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been uploaded.<br/>If you have set an email, a message will be sent once the import is ready, if not, refresh this page.</div>';
-        }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'D'){
-            echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been deleted.</div>';
-        }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'C'){
-            echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #fff3cd;border-color: #ffeeba !important;color: #856404;">The import has been canceled and the imported file deleted.</div>';
-        }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'L'){
-            echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Logs deleted successfully.</div>';
-        }
-        ?>
-    <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
-    <br/>
-    <p>This tool helps import one or more big CSV files without the need to split them.</p>
-    <p style="color: red;font-style: italic">Note: this page does not refresh itself. To see the status of the import you will need to refresh the browser window.</p>
-    <br/>
-    <div>
-        <form method="post" onsubmit="return saveFilesIfTheyExist('<?=$module->getUrl('saveData.php')?>');" id="importForm">
-            <div style="padding-bottom: 12px">
-                <label style="padding-right: 30px;">Set CSV delimiter character:</label>
-                <select name="csvDelimiter" id="csvDelimiter" class="select-csv">
-                    <option value="," selected="selected">, (comma) - default</option>
-                    <option value="tab">tab</option>
-                    <option value=";">; (semi-colon)</option>
-                    <option value="|">| (pipe)</option>
-                    <option value="^">^ (caret)</option>
-                </select>
-            </div>
-            <div style="padding-bottom: 12px">
-                <label style="padding-right: 30px;">Select a CSV file to import:</label>
-                <input type="file" id="importFile" onchange="return fileValidation(this)">
-                <input type="submit" id="import" class="btn" style="color: #fff;background-color: #007bff;border-color: #007bff;cursor:not-allowed" disabled>
-            </div>
-        </form>
-
-    </div>
-    <div>
-            <div class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
-            <div class='alert alert-primary' style='border:1px solid #b8daff !important;max-width: 800px'>
             <?php
-            $edoc_list = $module->getProjectSetting('edoc');
-            $import_cancel = $module->getProjectSetting('import-cancel');
-            $import = $module->getProjectSetting('import');
-            $docs = "";
-            $count_file = 0;
-            foreach ($edoc_list as $index => $edoc){
-                $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
-                $q = db_query($sql);
+            if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'S'){
+                echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been uploaded.<br/>If you have set an email, a message will be sent once the import is ready, if not, refresh this page.</div>';
+            }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'D'){
+                echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Your file has been deleted.</div>';
+            }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'C'){
+                echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #fff3cd;border-color: #ffeeba !important;color: #856404;">The import has been canceled and the imported file deleted.</div>';
+            }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'L'){
+                echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Logs deleted successfully.</div>';
+            }else if(array_key_exists('message', $_GET) &&  $_GET['message'] === 'I'){
+                echo '<div class="alert" id="Msg" style="max-width: 1000px;background-color: #dff0d8;border-color: #d0e9c6 !important;color: #3c763d;">Import will start shortly.</div>';
+            }
+            ?>
+        <div style="color: #800000;font-size: 16px;font-weight: bold;"><?=$module->getModuleName()?></div>
+        <br/>
+        <p>This tool helps import one or more big CSV files without the need to split them.</p>
+        <p style="color: red;font-style: italic">Note: this page does not refresh itself. To see the status of the import you will need to refresh the browser window.</p>
+        <br/>
+        <div>
+            <form method="post" onsubmit="return saveFilesIfTheyExist('<?=$module->getUrl('saveData.php')?>');" id="importForm">
+                <div style="padding-bottom: 12px">
+                    <label style="padding-right: 30px;">Set CSV delimiter character:</label>
+                    <select name="csvDelimiter" id="csvDelimiter" class="select-csv">
+                        <option value="," selected="selected">, (comma) - default</option>
+                        <option value="tab">tab</option>
+                        <option value=";">; (semi-colon)</option>
+                        <option value="|">| (pipe)</option>
+                        <option value="^">^ (caret)</option>
+                    </select>
+                </div>
+                <div style="padding-bottom: 12px">
+                    <label style="padding-right: 30px;">Select to check for existing records:</label>
+                    <input type="checkbox" id="checkExisting" name="checkExisting" style="width: 20px;height: 20px;vertical-align: -3px;" onclick="anyFilesWithChecks(document.getElementById('importFile'))" checked>
+                </div>
+                <div style="padding-bottom: 12px">
+                    <label style="padding-right: 30px;">Select a CSV file to import:</label>
+                    <input type="file" id="importFile" onchange="return fileValidation(this)">
+                    <input type="submit" id="import" class="btn" style="color: #fff;background-color: #007bff;border-color: #007bff;cursor:not-allowed" disabled>
+                </div>
+            </form>
 
-                if ($error = db_error()) {
-                    die($sql . ': ' . $error);
-                }
-                while ($row = db_fetch_assoc($q)) {
-                    if(!$import_cancel[$index]) {
-                        $count_file++;
-                        $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
-                        if(!$import[$index]){
-                            $delete = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
+        </div>
+        <div>
+                <div class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
+                <div class='alert alert-primary' style='border:1px solid #b8daff !important;max-width: 800px'>
+                <?php
+                $edoc_list = $module->getProjectSetting('edoc');
+                $import_cancel = $module->getProjectSetting('import-cancel');
+                $import_checked = $module->getProjectSetting('import-checked');
+                $import_continue = $module->getProjectSetting('import-continue');
+                $import = $module->getProjectSetting('import');
+                $docs = "";
+                $count_file = 0;
+                foreach ($edoc_list as $index => $edoc){
+                    $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+                    $q = db_query($sql);
+
+                    if ($error = db_error()) {
+                        die($sql . ': ' . $error);
+                    }
+                    while ($row = db_fetch_assoc($q)) {
+                        if((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) {
+                            $count_file++;
+                            $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
+                            if(!$import[$index]){
+                                $delete = "<span class='fa fa-fw fa-spinner fa-spin'></span>";
+                            }
+                            $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."</div>";
                         }
-                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."</div>";
                     }
                 }
-            }
 
-            if($docs != ""){
-                echo $docs;
-            }else{
-                echo "<div><i>None</i>";
-            }
-            echo "";
-            ?>
+                if($docs != ""){
+                    echo $docs;
+                }else{
+                    echo "<div><i>None</i>";
+                }
+                echo "";
+                ?>
+                </div>
+        </div>
+        <div>
+            <div class="checkedFile"><span class="fa fa-clock fa-search"></span> Checked files:</div>
+                <?php
+                $edoc_list = $module->getProjectSetting('edoc');
+                $import_cancel = $module->getProjectSetting('import-cancel');
+                $import_checked = $module->getProjectSetting('import-checked');
+                $import_check_started = $module->getProjectSetting('import-checked-started');
+                $import_continue = $module->getProjectSetting('import-continue');
+                $import = $module->getProjectSetting('import');
+                $docs = "";
+                $count_file = 0;
+                foreach ($edoc_list as $index => $edoc){
+                    $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+                    $q = db_query($sql);
+
+                    if ($error = db_error()) {
+                        die($sql . ': ' . $error);
+                    }
+                    while ($row = db_fetch_assoc($q)) {
+                        if($import_checked[$index] && !$import_continue[$index]) {
+                            $count_file++;
+                            $delete = "";
+                            $continue_btn = "";
+                            if($import_check_started[$index]){
+                                $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
+                                $continue_btn = "<a onclick='continueImport(" . $edoc . ")' class='btn btn-success' style='float: right;font-size: 13px;color: #fff;'>Continue Import</a></span>";
+                            }
+
+                            $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."<span>".$continue_btn."</div>";
+                        }
+                    }
+                }
+
+                if($docs != ""){
+                    echo "<div class='alert alert-warning' style='border:1px solid #ffeeba !important;max-width: 800px;padding-bottom: 25px;'>".$docs."</div>";
+                }else{
+                    echo "<div class='alert alert-warning' style='border:1px solid #ffeeba !important;max-width: 800px;'><div><i>None</i></div>";
+                }
+                echo "";
+                ?>
             </div>
-    </div>
+        </div>
     </div>
     <br>
     <br>

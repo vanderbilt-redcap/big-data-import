@@ -1,7 +1,24 @@
 <?php
+$import_checked = empty($module->getProjectSetting('import-checked'))?array():$module->getProjectSetting('import-checked');
+array_push($import_checked,filter_var($_REQUEST['checkExisting'], FILTER_VALIDATE_BOOLEAN));
+$module->setProjectSetting('import-checked', $import_checked);
+
+$start_import = true;
+if(filter_var($_REQUEST['checkExisting'], FILTER_VALIDATE_BOOLEAN)){
+    $start_import = false;
+}
+
 $import_list = empty($module->getProjectSetting('import'))?array():$module->getProjectSetting('import');
-array_push($import_list,true);
+array_push($import_list,$start_import);
 $module->setProjectSetting('import', $import_list);
+
+$import_check_started = empty($module->getProjectSetting('import-checked-started'))?array():$module->getProjectSetting('import-checked-started');
+array_push($import_check_started,$start_import);
+$module->setProjectSetting('import-checked-started', $import_check_started);
+
+$import_continue = empty($module->getProjectSetting('import-continue'))?array():$module->getProjectSetting('import-continue');
+array_push($import_continue,$start_import);
+$module->setProjectSetting('import-continue', $import_continue);
 
 $import_cancel = empty($module->getProjectSetting('import-cancel'))?array():$module->getProjectSetting('import-cancel');
 array_push($import_cancel,false);

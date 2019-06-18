@@ -1,16 +1,42 @@
-function fileValidation(fileInput){
+function fileValidation(fileInput) {
     var filePath = fileInput.value;
     var allowedExtensions = /(\.csv)$/i;
-    if(!allowedExtensions.exec(filePath)){
+    if (!allowedExtensions.exec(filePath)) {
         simpleDialog('Please upload a CSV file.', '<span class="error-title">Wrong File</span>', null, 500);
         fileInput.value = '';
-        $('#import').css('cursor','not-allowed');
-        $('#import').prop('disabled',true);
+        $('#import').css('cursor', 'not-allowed');
+        $('#import').prop('disabled', true);
         return false;
-    }else{
+    }else if($('#checkExisting').is(":checked")){
+        anyFilesWithChecks(fileInput)
+    } else{
         $('#import').prop('disabled',false);
         $('#import').css('cursor','pointer');
     }
+}
+
+function anyFilesWithChecks(fileInput){
+    console.log("url:"+anyFilesWithChecks_url)
+    $.ajax({
+        url: anyFilesWithChecks_url,
+        data: "&pid="+pid,
+        type: 'POST',
+        success: function(returnData) {
+            var data = JSON.parse(returnData);
+            if(data.checked){
+                if(fileInput.value != ""){
+                    simpleDialog('You can only check for existing records one file at a time.', '<span class="error-title">Multiple existing records checked files</span>', null, 500);
+                    fileInput.value = '';
+                    $('#import').css('cursor', 'not-allowed');
+                    $('#import').prop('disabled', true);
+                }
+            }else{
+                $('#import').prop('disabled',false);
+                $('#import').css('cursor','pointer');
+            }
+
+        }
+    });
 }
 
 function saveFilesIfTheyExist(url) {
@@ -35,7 +61,8 @@ function saveFilesIfTheyExist(url) {
     for (var name in files) {
         lengthOfFiles++;
         formData.append(name, files[name]);   // filename agnostic
-        formData.append('csvDelimiter', $('#csvDelimiter option:selected').val());   // filename agnostic
+        formData.append('csvDelimiter', $('#csvDelimiter option:selected').val());
+        formData.append('checkExisting', $('#checkExisting').is(':checked'));
     }
     if (lengthOfFiles > 0) {
         $.ajax({
@@ -126,7 +153,6 @@ function cancelImport(){
 }
 
 function deleteLogs(){
-    console.log("deleteLogs")
     $.ajax({
         url: deleteLogs_url,
         data: "&pid="+pid,
@@ -149,7 +175,31 @@ function deleteLogs(){
             }
         },
         error: function(e) {
-            $("#spinner").removeClass('fa fa-fw fa-spinner fa-spin');
+            simpleDialog("One or more of the files could not be saved."+JSON.stringify(e), 'Error', null, 500);
+        }
+    });
+}
+
+function continueImport(edoc){
+    $.ajax({
+        url: continueImport_url,
+        data: "&pid="+pid+"&edoc="+edoc,
+        type: 'POST',
+        success: function(returnData) {
+            var data = JSON.parse(returnData);
+            if (data.status == 'success') {
+                var url = window.location.href;
+                if(url.match(/(&message=)([A-Z]{1})/)){
+                    url = url.replace( /(&message=)([A-Z]{1})/, "&message=I" );
+                }else{
+                    url = url + "&message=I";
+                }
+                window.location = url;
+            }else{
+                simpleDialog(data.status+" Could not add continue status."+JSON.stringify(data), 'Error', null, 500);
+            }
+        },
+        error: function(e) {
             simpleDialog("One or more of the files could not be saved."+JSON.stringify(e), 'Error', null, 500);
         }
     });

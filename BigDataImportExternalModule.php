@@ -20,16 +20,33 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $import_list = $this->getProjectSetting('import', $localProjectId);
                 foreach ($import_list as $id=>$import){
                     $edoc = $this->getProjectSetting('edoc', $localProjectId)[$id];
+                    $import_checked = $this->getProjectSetting('import-checked', $localProjectId)[$id];
                     $import_number = $this->getProjectSetting('import-number', $localProjectId)[$id];
-                    if ($import && $edoc != "") {
+                    $import_continue = $this->getProjectSetting('import-continue', $localProjectId)[$id];
+                    $import_check_started = $this->getProjectSetting('import-checked-started', $localProjectId)[$id];
+                    if ($import && $edoc != "" && $import_continue) {
                         $import_started = $this->getProjectSetting('import', $localProjectId);
                         $import_started[$id] = false;
                         $this->setProjectSetting('import', $import_started,$localProjectId);
+
                         $error = $this->importRecords($localProjectId, $edoc,$id,$import_number);
                         if(!$error){
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
                         }else{
                             $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
+                        }
+                        $this->log($logtext,['import' => $import_number]);
+                    }else if($import_checked && $edoc != "" && !$import_check_started){
+                        $import_check_started_aux = $this->getProjectSetting('import-checked-started', $localProjectId);
+                        $import_check_started_aux[$id] = true;
+                        $this->setProjectSetting('import-checked-started', $import_check_started_aux,$localProjectId);
+
+                        $error = $this->checkRecords($localProjectId, $edoc,$id,$import_number);
+
+                        if(!$error){
+                            $logtext = "<div>Checking process finished <span class='fa fa-check fa-fw'></span></div>";
+                        }else{
+                            $logtext = "<div>Checking process finished with existing records <span class='fa fa-exclamation-circle fa-fw'></span></div>";
                         }
                         $this->log($logtext,['import' => $import_number]);
                     }
@@ -60,7 +77,90 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $this->setProjectSetting('import-number', array());
             $this->setProjectSetting('import-cancel', array());
             $this->setProjectSetting('import-delimiter', array());
+            $this->setProjectSetting('import-checked', array());
+            $this->setProjectSetting('import-continue', array());
+            $this->setProjectSetting('import-checked-started', array());
         }
+    }
+
+    function checkRecords($project_id,$edoc,$id,$import_number){
+        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+        $q = db_query($sql);
+
+        if ($error = db_error()) {
+            echo $sql . ': ' . $error;
+            $this->exitAfterHook();
+        }
+
+        $stored_name = "";
+        $doc_name = "";
+        while ($row = db_fetch_assoc($q)) {
+            $doc_name = $row['doc_name'];
+            $stored_name = $row['stored_name'];
+        }
+
+        $delimiter = $this->getProjectSetting('import-delimiter',$project_id)[$id];
+        $delimiter_text = $delimiter;
+        if($delimiter == ""){
+            $delimiter = ",";
+            $delimiter_text = $delimiter;
+        }else if($delimiter == "tab"){
+            $delimiter = "\t";
+        }
+
+        $this->log("
+        <div>Checking records from CSV file:</div>
+        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
+
+        $import_email = $this->getProjectSetting('import-email', $project_id);
+
+        $path = EDOC_PATH.$stored_name;
+        $content = file($path);
+        $fieldNames = explode($delimiter, $content[0]);
+        $str = preg_replace('/^[\pZ\p{Cc}\x{feff}]+|[\pZ\p{Cc}\x{feff}]+$/ux', '', $fieldNames[0]);
+        $record_id_name = $str;
+
+        $checked_records = "";
+        for ($i = 1; $i < count($content)-1; $i++) {
+            $data_aux = str_getcsv($content[$i], $delimiter, '"');
+            $record = $data_aux[0];
+            $data = REDCap::getData($project_id,'array',$record,$record_id_name);
+            if($data && strpos($checked_records,$record) === false && $record != ""){
+                $checked_records .= $record.", ";
+            }
+        }
+        $checked_records = rtrim($checked_records, ", ");
+        if($checked_records != ""){
+            $this->log("There are existing records in the project that match the excel file <span class='fa fa-times  fa-fw'></span>", [
+                'recordlist' => $checked_records
+            ]);
+
+            $sql = "select app_title from redcap_projects where project_id = '".db_escape($project_id)."' limit 1";
+            $q = db_query($sql);
+            $projectTitle = "";
+            while ($row = db_fetch_assoc($q)) {
+                $projectTitle = $row['app_title'];
+            }
+
+            $email_text = "Your checking process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>There are existing records in the project.";
+            $email_text .="<br/><br/>To continue with the import go to <a href='" . $this->getUrl('import.php') . "'>this page and click on <b>Continue Import</b></a>";
+            if ($import_email != "") {
+                REDCap::email($import_email, 'noreply@vumc.org', 'Checking process has finished with existing records', $email_text);
+
+            }
+            return true;
+        }else{
+            $import_continue = $this->getProjectSetting('import-continue', $project_id);
+            $import_continue[$id] = true;
+            $this->setProjectSetting('import-continue', $import_continue,$project_id);
+
+            $import = $this->getProjectSetting('import', $project_id);
+            $import[$id] = true;
+            $this->setProjectSetting('import', $import,$project_id);
+        }
+
+        return false;
+
     }
 
     function importRecords($project_id,$edoc,$id,$import_number){
@@ -82,7 +182,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $delimiter = $this->getProjectSetting('import-delimiter',$project_id)[$id];
         $delimiter_text = $delimiter;
         if($delimiter == ""){
-            $delimiter = " ,";
+            $delimiter = ",";
             $delimiter_text = $delimiter;
         }else if($delimiter == "tab"){
             $delimiter = "\t";
@@ -249,7 +349,10 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_list = empty($this->getProjectSetting('import'))?array():$this->getProjectSetting('import');
         $import_number = $this->getProjectSetting('import-number',$project_id);
         $import_cancel = $this->getProjectSetting('import-cancel',$project_id);
-        $import_delimiter =$this->getProjectSetting('import-delimiter');
+        $import_delimiter = $this->getProjectSetting('import-delimiter');
+        $import_checked = $this->getProjectSetting('import-checked');
+        $import_continue = $this->getProjectSetting('import-continue');
+        $import_check_started = $this->getProjectSetting('import-checked-started');
         $edoc_list = $this->getProjectSetting('edoc',$project_id);
         if (($key = array_search($edoc, $edoc_list)) !== false) {
             unset($edoc_list[$key]);
@@ -257,12 +360,18 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             unset($import_number[$key]);
             unset($import_cancel[$key]);
             unset($import_delimiter[$key]);
+            unset($import_checked[$key]);
+            unset($import_continue[$key]);
+            unset($import_check_started[$key]);
         }
         $this->setProjectSetting('edoc', $edoc_list,$project_id);
         $this->setProjectSetting('import', $import_list,$project_id);
         $this->setProjectSetting('import-number', $import_number,$project_id);
         $this->setProjectSetting('import-cancel', $import_cancel,$project_id);
         $this->setProjectSetting('import-delimiter', $import_delimiter,$project_id);
+        $this->setProjectSetting('import-checked', $import_checked,$project_id);
+        $this->setProjectSetting('import-continue', $import_continue,$project_id);
+        $this->setProjectSetting('import-checked-started', $import_check_started,$project_id);
 
         if($edoc != "" && $project_id != ""){
             $sql = "DELETE FROM redcap_edocs_metadata WHERE project_id=".$project_id." AND doc_id=" . $edoc;

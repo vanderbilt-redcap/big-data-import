@@ -21,6 +21,11 @@
     padding-right: 30px;
     color:#007bff !important;
 }
+.checkedFile{padding:10px 0px;}
+.checkedFile,checkedFile a,.checkedFile a:active,.checkedFile a:hover,.checkedFile a:visited{
+    padding-right: 30px;
+    color:#856404 !important;
+}
 .fa-check{
     color: green;
 }

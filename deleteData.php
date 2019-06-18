@@ -4,13 +4,15 @@ $project_id = $_POST['pid'];
 $status = "success";
 if ($edoc) {
     $import = $module->getProjectSetting('import');
+    $import_check_started = $module->getProjectSetting('import-checked-started');
+    $import_continue = $module->getProjectSetting('import-ccontinue');
     $edoc_list = $module->getProjectSetting('edoc');
 
     $index = "";
     if (($key = array_search($edoc, $edoc_list)) !== false) {
         $index = $key;
     }
-    if($import[$index]){
+    if($import[$index] || (!$import[$index] && !$import_check_started[$index]) || ($import_check_started[$index] && !$import_continue[$index])){
         $total_import = $module->getProjectSetting('total-import') - 1;
         $module->setProjectSetting('total-import', $total_import);
 
