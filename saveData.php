@@ -4,8 +4,10 @@ array_push($import_checked,filter_var($_REQUEST['checkExisting'], FILTER_VALIDAT
 $module->setProjectSetting('import-checked', $import_checked);
 
 $start_import = true;
+$checked_log = "";
 if(filter_var($_REQUEST['checkExisting'], FILTER_VALIDATE_BOOLEAN)){
     $start_import = false;
+    $checked_log = "\nChecked for existing records";
 }
 
 $import_list = empty($module->getProjectSetting('import'))?array():$module->getProjectSetting('import');
@@ -45,7 +47,7 @@ foreach($_FILES as $key=>$value){
             array_push($edoc_list,$edoc);
             $module->setProjectSetting('edoc', $edoc_list);
 
-            \REDCap::logEvent("File <b>submitted</b> via <i>Big Data Import</i> external module\n <b>Import #".$total_import."</b>","user = ".USERID."\nFile = '".$module->getDocName($edoc)."\nImport = ".$total_import."\nDelimiter = ".$_REQUEST['csvDelimiter'],null,null,null,$pid);
+            \REDCap::logEvent("File <b>submitted</b> via <i>Big Data Import</i> external module\n <b>Import #".$total_import."</b>","user = ".USERID."\nFile = '".$module->getDocName($edoc)."\nImport = ".$total_import."\nDelimiter = ".$_REQUEST['csvDelimiter'].$checked_log,null,null,null,$pid);
         } else {
             header('Content-type: application/json');
             echo json_encode(array(
