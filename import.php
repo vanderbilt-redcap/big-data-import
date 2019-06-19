@@ -258,13 +258,13 @@
                         }
                         else{
                             while($row = $results->fetch_assoc()){
-                                $status = "<span class='fa fa-check  fa-fw'></span>";
+                                $status = "<span class='fa fa-check fa-fw' title='success'></span>";
                                 if($row['status'] == '0'){
-                                    $status = "<span class='fa fa-check  fa-fw'></span>";
+                                    $status = "<span class='fa fa-check fa-fw' title='success'></span>";
                                 }else if($row['status'] == '1'){
-                                    $status = "<span class='fa fa-times  fa-fw'></span>";
+                                    $status = "<span class='fa fa-times fa-fw' title='error'></span>";
                                 }else if($row['status'] == '2'){
-                                    $status = "<span class='fa fa-ban  fa-fw'></span>";
+                                    $status = "<span class='fa fa-ban fa-fw' title='cancelled'></span>";
                                 }
 
                                 $checked = "No";
