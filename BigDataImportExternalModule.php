@@ -211,6 +211,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
+        $import_checked = $this->getProjectSetting('import-checked', $project_id)[$id];
 
         $path = EDOC_PATH.$stored_name;
         $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$delimiter);
@@ -256,10 +257,12 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
         }
         $count = 0;
+        $totalrecords = 0;
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
             $data = array();
+            $numrecords = 0;
             for ($line = 1; $line <= $chunks; $line++) {
                 $data_aux = str_getcsv($content[($line + $count)], $delimiter, '"');
                 $aux = array();
@@ -289,12 +292,13 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 }
                 if(strpos($import_records,$record) === false){
                     $import_records .= $record.", ";
+                    $numrecords++;
                 }
             }
             $count += $chunks;
             $results = \Records::saveData($project_id, 'array', $data, 'normal', 'MDY', 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
             $results = $this->adjustSaveResults($results);
-
+            $totalrecords += $numrecords;
             $stopEarly = false;
             if (empty($results['errors'])) {
                 $message = "completed ";
@@ -322,6 +326,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             ]);
 
             if ($stopEarly) {
+                $totalrecords = $totalrecords - $numrecords;
                 $this->resetValues($project_id, $edoc);
                 $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.";
                 $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
@@ -329,17 +334,38 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                      REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' has failed', $email_text);
 
                 }
+
+                $this->log("Data", [
+                    'file' => $doc_name,
+                    'totalrecords' => $totalrecords,
+                    'status' => 1,
+                    'checked' =>$import_checked,
+                    'import' => $import_number
+                ]);
                 return true;
             }
             $import_cancel = $this->getProjectSetting('import-cancel', $project_id)[$id];
             if($import_cancel){
                 $this->log("Import #$import_number cancelled <span class='fa fa-ban  fa-fw'></span>", ['import' => $import_number]);
                 $this->resetValues($project_id, $edoc);
+                $this->log("Data", [
+                    'file' => $doc_name,
+                    'totalrecords' => $totalrecords,
+                    'status' => 2,
+                    'checked' =>$import_checked,
+                    'import' => $import_number
+                ]);
                 return true;
             }
-
         }
 
+        $this->log("Data", [
+            'file' => $doc_name,
+            'totalrecords' => $totalrecords,
+            'status' => 0,
+            'checked' =>$import_checked,
+            'import' => $import_number
+        ]);
         $this->resetValues($project_id, $edoc);
         if ($import_email != "") {
             $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.";

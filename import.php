@@ -177,7 +177,7 @@
                 </div>
         </div>
         <div>
-            <div class="checkedFile"><span class="fa fa-clock fa-search"></span> Checked files:</div>
+            <div class="pendingFile"><span class="fa fa-clock fa-search"></span> Checked files:</div>
                 <?php
                 $edoc_list = $module->getProjectSetting('edoc');
                 $import_cancel = $module->getProjectSetting('import-cancel');
@@ -216,9 +216,81 @@
                 }
                 echo "";
                 ?>
+        </div>
+        <div style="padding-top: 20px">
+           <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <a data-toggle="collapse" href="#collapse1"><span class="fa fa-info-circle"></span> Import information</a>
+                    </h3>
+                </div>
+
+                <div id="collapse1" class="table-responsive panel-collapse collapse show" aria-expanded="true" aria-controls="collapse1">
+                    <table class="table panel-table" data-sortable>
+                    <thead>
+                    <tr>
+                        <th style="min-width: 160px;">Date/Time</th>
+                        <th>File</th>
+                        <th style="text-align: center">Records Imported</th>
+                        <th style="text-align: center">Status</th>
+                        <th style="text-align: center">Checked</th>
+                        <th style="text-align: center">Import #</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        $results = $module->queryLogs("
+                            select log_id, timestamp, totalrecords, file, status, import, checked
+                            where project_id = '".$_GET['pid']."' AND message='Data'
+                            order by log_id desc
+                            limit 10
+                        ");
+
+                        if($results->num_rows === 0){
+                            ?>
+                            <tr>
+                                <td colspan="4">No logs available</td>
+                                <td style="display: none;"></td>
+                                <td style="display: none;"></td>
+                                <td style="display: none;"></td>
+                            </tr>
+                            <?php
+                        }
+                        else{
+                            while($row = $results->fetch_assoc()){
+                                $status = "<span class='fa fa-check  fa-fw'></span>";
+                                if($row['status'] == '0'){
+                                    $status = "<span class='fa fa-check  fa-fw'></span>";
+                                }else if($row['status'] == '1'){
+                                    $status = "<span class='fa fa-times  fa-fw'></span>";
+                                }else if($row['status'] == '2'){
+                                    $status = "<span class='fa fa-ban  fa-fw'></span>";
+                                }
+
+                                $checked = "No";
+                                if($row['checked'] == "1"){
+                                    $checked = "Yes";
+                                }
+                                ?>
+                                <tr>
+                                    <td><?= $row['timestamp'] ?></td>
+                                    <td><?= $row['file'] ?></td>
+                                    <td style="text-align: center"><?= $row['totalrecords'] ?></td>
+                                    <td style="text-align: center"><?= $status ?></td>
+                                    <td style="text-align: center"><?= $checked ?></td>
+                                    <td style="text-align: center"><?= $row['import'] ?></td>
+                                </tr>
+                                <?php
+                            }
+                        }
+                        ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+
+</div>
     <br>
     <br>
     <br>
@@ -258,26 +330,30 @@
                 $details = $row['details'];
                 $import = $row['import'];
                 $delimiter = $row['delimiter'];
-                ?>
-                <tr>
-                    <td><?=$row['timestamp']?></td>
-                    <td class="message"><?=$row['message']?></td>
-                    <td ><?=$row['recordlist']?></td>
-                    <td>
-                        <?php if(!empty($details)) { ?>
-                        <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?=$logId?>,<?=$import?>)">Show Details</button>
-                        <script>
-                            ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($details)?>
-                        </script>
-                        <?php }else  if(!empty($import)) {  ?>
-                            <div>Import #<?=$import?></div>
-                            <?php if(!empty($delimiter)){ ?>
-                                <div>Delimiter: <?=$delimiter?></div>
-                            <?php }  ?>
-                        <?php }  ?>
-                    </td>
-                </tr>
-                <?php
+                if($row['message'] != "Data") {
+                    ?>
+                    <tr>
+                        <td><?= $row['timestamp'] ?></td>
+                        <td class="message"><?= $row['message'] ?></td>
+                        <td><?= $row['recordlist'] ?></td>
+                        <td>
+                            <?php if (!empty($details)) { ?>
+                                <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?= $logId ?>,<?= $import ?>)">
+                                    Show Details
+                                </button>
+                                <script>
+                                    ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($details)?>
+                                </script>
+                            <?php }else  if (!empty($import)) { ?>
+                                <div>Import #<?= $import ?></div>
+                                <?php if (!empty($delimiter)) { ?>
+                                <div>Delimiter: <?= $delimiter ?></div>
+                            <?php } ?>
+                            <?php } ?>
+                        </td>
+                    </tr>
+                    <?php
+                }
             }
         }
         ?>
