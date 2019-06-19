@@ -21,10 +21,6 @@ if ($edoc) {
         $import_list[$index] = true;
         $module->setProjectSetting('import', $import_list);
 
-        $import_checked = $module->getProjectSetting('import-checked');
-        $import_checked[$index] = false;
-        $module->setProjectSetting('import-checked', $import_checked);
-
         $import_number = $module->getProjectSetting('import-number');
         $import_number_current = $import_number[$index];
 
