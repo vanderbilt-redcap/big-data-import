@@ -33,8 +33,8 @@
                     <h4 class="modal-title" id="myModalLabel">Delete Logs</h4>
                 </div>
                 <div class="modal-body">
-                    <div>Are you sure you want to delete the logs?</div>
-                    <div>This will clean up all the information.</div>
+                    <div>Are you sure you want to delete the log?</div>
+                    <div>Doing this will erase all of the information in the Recent Log Entry table.</div>
                 </div>
 
                 <div class="modal-footer">

@@ -46,7 +46,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         if(!$error){
                             $logtext = "<div>Checking process finished <span class='fa fa-check fa-fw'></span></div>";
                         }else{
-                            $logtext = "<div>Checking process finished with existing records <span class='fa fa-exclamation-circle fa-fw'></span></div>";
+                            $logtext = "<div>Checking process finished with issues <span class='fa fa-exclamation-circle fa-fw'></span></div>";
                         }
                         $this->log($logtext,['import' => $import_number]);
                     }
@@ -121,19 +121,39 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $record_id_name = $str;
 
         $checked_records = "";
-        for ($i = 1; $i < count($content)-1; $i++) {
+        $checked_records_errors = "";
+        for ($i = 1; $i < count($content); $i++) {
             $data_aux = str_getcsv($content[$i], $delimiter, '"');
             $record = $data_aux[0];
             $data = REDCap::getData($project_id,'array',$record,$record_id_name);
-            if($data && strpos($checked_records,$record) === false && $record != ""){
-                $checked_records .= $record.", ";
+            if($data && strpos($checked_records,$record) === false && $record != "") {
+                $checked_records .= $record . ", ";
+            }else if($record == ""){
+                $checked_records_errors .= ($i+1);
             }
         }
+        $checked_records_errors = rtrim($checked_records_errors, ", ");
         $checked_records = rtrim($checked_records, ", ");
-        if($checked_records != ""){
-            $this->log("There are existing records in the project that match the excel file <span class='fa fa-times  fa-fw'></span>", [
-                'recordlist' => $checked_records
-            ]);
+        if($checked_records != "" || $checked_records_errors != ""){
+            if($checked_records_errors != ""){
+                $this->resetValues($project_id, $edoc);
+
+                $this->log("There are blank records in the file! <span class='fa fa-times  fa-fw'></span>", [
+                    'recordlist' => "Line: ".$checked_records_errors
+                ]);
+
+                $email_text = "Your checking process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>There are blank records in the project. Please upload the file again after fixing the error lines.";
+                $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
+                $subject = 'Checking process has finished with blank records';
+            }else{
+                $this->log("There are existing records in the project that match the excel file <span class='fa fa-times  fa-fw'></span>", [
+                    'recordlist' => $checked_records
+                ]);
+
+                $email_text = "Your checking process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>There are existing records in the project.";
+                $email_text .="<br/><br/>To continue with the import go to <a href='" . $this->getUrl('import.php') . "'>this page and click on <b>Continue Import</b></a>";
+                $subject = 'Checking process has finished with existing records';
+            }
 
             $sql = "select app_title from redcap_projects where project_id = '".db_escape($project_id)."' limit 1";
             $q = db_query($sql);
@@ -142,10 +162,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $projectTitle = $row['app_title'];
             }
 
-            $email_text = "Your checking process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>There are existing records in the project.";
-            $email_text .="<br/><br/>To continue with the import go to <a href='" . $this->getUrl('import.php') . "'>this page and click on <b>Continue Import</b></a>";
             if ($import_email != "") {
-                REDCap::email($import_email, 'noreply@vumc.org', 'Checking process has finished with existing records', $email_text);
+                REDCap::email($import_email, 'noreply@vumc.org', $subject, $email_text);
 
             }
             return true;
