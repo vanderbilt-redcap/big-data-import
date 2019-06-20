@@ -239,3 +239,7 @@ table[data-sortable] th:hover, .sorting_asc, .sorting_desc{
 .backTo a:hover{
     text-decoration: underline;
 }
+
+.collapse.show {
+    display: block;
+}
