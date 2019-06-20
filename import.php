@@ -119,6 +119,7 @@
 
     </script>
 </div>
+
 <div id="big-data-module-wrapper">
     <div>
             <?php
@@ -225,7 +226,9 @@
                             $count_file++;
                             $delete = "";
                             $continue_btn = "";
-                            if($import_check_started[$index]){
+                            if(!$import_check_started[$index]){
+                                $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
+                            }else if($import_check_started[$index]){
                                 $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
                                 $continue_btn = "<a onclick='continueImport(" . $edoc . ")' class='btn btn-success' style='float: right;font-size: 13px;color: #fff;'>Continue Import</a></span>";
                             }
