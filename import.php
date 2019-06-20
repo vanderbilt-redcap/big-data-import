@@ -268,7 +268,7 @@
                     <tbody>
                         <?php
                         $results = $module->queryLogs("
-                            select log_id, timestamp, totalrecords, file, status, import, checked, totalrecordsIds, edoc 
+                            select log_id, timestamp, file, status, import, checked, totalrecordsIds, edoc 
                             where project_id = '".$_GET['pid']."' AND message='Data'
                             order by log_id desc
                             limit 5
@@ -305,8 +305,9 @@
                                     $checked = "Yes";
                                 }
 
-                                if($row['totalrecords'] > 0){
-                                    $total = '<a href="#" rel="popover" data-toggle="popover" data-target-selector="#records-activated'.$index.'" data-title="Records for Import #'.$row['import'].'" style="color: #337ab7;">Total: '.$row['totalrecords'].'</a></div><br/>';
+                                if($row['totalrecordsIds'] != ""){
+                                    $records = count(explode(",",$row['totalrecordsIds']));
+                                    $total = '<a href="#" rel="popover" data-toggle="popover" data-target-selector="#records-activated'.$index.'" data-title="Records for Import #'.$row['import'].'" style="color: #337ab7;">Total: '.$records.'</a></div><br/>';
                                     $total .= '<div id="records-activated'.$index.'" class="hidden">
                                                             <p>'.$row['totalrecordsIds'].'</p>
                                                        </div>';

@@ -258,7 +258,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
         }
         $count = 0;
-        $totalrecords = 0;
         $totalrecordsIds = "";
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
@@ -303,7 +302,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $count += $chunks;
             $results = \Records::saveData($project_id, 'array', $data, 'normal', 'MDY', 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
             $results = $this->adjustSaveResults($results);
-            $totalrecords += $numrecords;
             $stopEarly = false;
             if (empty($results['errors'])) {
                 $message = "completed ";
@@ -331,7 +329,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             ]);
 
             if ($stopEarly) {
-                $totalrecords = $totalrecords - $numrecords;
                 $this->resetValues($project_id, $edoc);
                 $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.";
                 $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
@@ -342,7 +339,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
                 $this->log("Data", [
                     'file' => $doc_name,
-                    'totalrecords' => $totalrecords,
                     'totalrecordsIds' => rtrim($totalrecordsIds, ", "),
                     'status' => 1,
                     'edoc' => $edoc,
@@ -357,7 +353,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $this->resetValues($project_id, $edoc);
                 $this->log("Data", [
                     'file' => $doc_name,
-                    'totalrecords' => $totalrecords,
                     'totalrecordsIds' => rtrim($totalrecordsIds, ", "),
                     'status' => 2,
                     'edoc' => $edoc,
@@ -370,7 +365,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $this->log("Data", [
             'file' => $doc_name,
-            'totalrecords' => $totalrecords,
             'totalrecordsIds' => rtrim($totalrecordsIds, ", "),
             'status' => 0,
             'edoc' => $edoc,
