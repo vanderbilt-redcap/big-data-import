@@ -252,7 +252,7 @@
                     </h3>
                 </div>
 
-                <div id="collapse1" class="table-responsive panel-collapse" aria-expanded="true" aria-controls="collapse1">
+                <div id="collapse1" class="table-responsive panel-collapse collapse in" aria-expanded="true" aria-controls="collapse1">
                     <table class="table panel-table" data-sortable>
                     <thead>
                     <tr>
