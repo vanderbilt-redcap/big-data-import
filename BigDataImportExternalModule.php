@@ -143,8 +143,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             while ($row = db_fetch_assoc($q)) {
                 $projectTitle = $row['app_title'];
             }
+            $this->resetValues($project_id, $edoc);
             if($checked_records_errors != ""){
-                $this->resetValues($project_id, $edoc);
 
                 $this->log("There are blank records in the file! <span class='fa fa-times  fa-fw'></span>", [
                     'recordlist' => "Line: ".$checked_records_errors
