@@ -186,7 +186,7 @@
                             $count_file++;
                             $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
                             if(!$import[$index]){
-                                $delete = "<span class='fa fa-fw fa-spinner fa-spin'></span>";
+                                $delete = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
                             }
                             $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."</div>";
                         }
@@ -247,7 +247,8 @@
            <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
-                        <a data-toggle="collapse" href="#collapse1"><span class="fa fa-info-circle"></span> Import information</a>
+                        <a data-toggle="collapse" href="#collapse1"><span class="fa fa-info-circle"></span> Import information <span class="fa fa-fw fa-angle-down"></span></a>
+                        <a href="<?=$module->getUrl('importInformationAll.php')?>" style="color: #337ab7;float: right;">View More</a>
                     </h3>
                 </div>
 
