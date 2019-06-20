@@ -258,6 +258,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
         $count = 0;
         $totalrecords = 0;
+        $totalrecordsIds = "";
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
@@ -293,6 +294,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 if(strpos($import_records,$record) === false){
                     $import_records .= $record.", ";
                     $numrecords++;
+                }
+                if(strpos($totalrecordsIds,$record) === false){
+                    $totalrecordsIds .= $record.", ";
                 }
             }
             $count += $chunks;
@@ -338,7 +342,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $this->log("Data", [
                     'file' => $doc_name,
                     'totalrecords' => $totalrecords,
+                    'totalrecordsIds' => rtrim($totalrecordsIds, ", "),
                     'status' => 1,
+                    'edoc' => $edoc,
                     'checked' =>$import_checked,
                     'import' => $import_number
                 ]);
@@ -351,7 +357,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $this->log("Data", [
                     'file' => $doc_name,
                     'totalrecords' => $totalrecords,
+                    'totalrecordsIds' => rtrim($totalrecordsIds, ", "),
                     'status' => 2,
+                    'edoc' => $edoc,
                     'checked' =>$import_checked,
                     'import' => $import_number
                 ]);
@@ -362,7 +370,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $this->log("Data", [
             'file' => $doc_name,
             'totalrecords' => $totalrecords,
+            'totalrecordsIds' => rtrim($totalrecordsIds, ", "),
             'status' => 0,
+            'edoc' => $edoc,
             'checked' =>$import_checked,
             'import' => $import_number
         ]);

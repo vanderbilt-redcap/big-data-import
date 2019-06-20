@@ -20,6 +20,42 @@
             deleteLogs();
             return false;
         });
+
+        jQuery('[data-toggle="popover"]').popover({
+            html : true,
+            content: function() {
+                return $(jQuery(this).data('target-selector')).html();
+            },
+            title: function(){
+                return '<span style="padding-top:0px;">'+jQuery(this).data('title')+'<span class="close" style="line-height: 0.5;padding-top:0px;padding-left: 10px">&times;</span></span>';
+            }
+        }).on('shown.bs.popover', function(e){
+            var popover = jQuery(this);
+            jQuery(this).parent().find('div.popover .close').on('click', function(e){
+                popover.popover('hide');
+            });
+            $('div.popover .close').on('click', function(e){
+                popover.popover('hide');
+            });
+
+        });
+        //We add this or the second time we click it won't work. It's a bug in bootstrap
+        $('[data-toggle="popover"]').on("hidden.bs.popover", function() {
+            if($(this).data("bs.popover").inState == undefined){
+                //BOOTSTRAP 4
+                $(this).data("bs.popover")._activeTrigger.click = false;
+            }else{
+                //BOOTSTRAP 3
+                $(this).data("bs.popover").inState.click = false;
+            }
+        });
+
+        //To prevent the popover from scrolling up on click
+        $("a[rel=popover]")
+            .popover()
+            .click(function(e) {
+                e.preventDefault();
+            });
     } );
 
 </script>
@@ -83,16 +119,6 @@
 
     </script>
 </div>
-<?php
-//$module->setProjectSetting('import',array());
-//$module->setProjectSetting('import-continue',array());
-//
-//print_array($module->getProjectSetting('import'));
-//print_array($module->getProjectSetting('edoc'));
-//print_array($module->getProjectSetting('import-checked'));
-//print_array($module->getProjectSetting('import-checked-started'));
-//print_array($module->getProjectSetting('import-continue'));
-?>
 <div id="big-data-module-wrapper">
     <div>
             <?php
@@ -231,7 +257,8 @@
                     <tr>
                         <th style="min-width: 160px;">Date/Time</th>
                         <th>File</th>
-                        <th style="text-align: center">Records Imported</th>
+                        <th style="text-align: center">Uploaded By</th>
+                        <th style="text-align: center">Records</th>
                         <th style="text-align: center">Status</th>
                         <th style="text-align: center">Checked</th>
                         <th style="text-align: center">Import #</th>
@@ -240,7 +267,7 @@
                     <tbody>
                         <?php
                         $results = $module->queryLogs("
-                            select log_id, timestamp, totalrecords, file, status, import, checked
+                            select log_id, timestamp, totalrecords, file, status, import, checked, totalrecordsIds, edoc 
                             where project_id = '".$_GET['pid']."' AND message='Data'
                             order by log_id desc
                             limit 10
@@ -249,7 +276,11 @@
                         if($results->num_rows === 0){
                             ?>
                             <tr>
-                                <td colspan="4">No logs available</td>
+                                <td colspan="7">No import logs available</td>
+                                <td style="display: none;"></td>
+                                <td style="display: none;"></td>
+                                <td style="display: none;"></td>
+                                <td style="display: none;"></td>
                                 <td style="display: none;"></td>
                                 <td style="display: none;"></td>
                                 <td style="display: none;"></td>
@@ -257,6 +288,7 @@
                             <?php
                         }
                         else{
+                            $index = 0;
                             while($row = $results->fetch_assoc()){
                                 $status = "<span class='fa fa-check fa-fw' title='success'></span>";
                                 if($row['status'] == '0'){
@@ -271,11 +303,31 @@
                                 if($row['checked'] == "1"){
                                     $checked = "Yes";
                                 }
+
+                                if($row['totalrecords'] > 0){
+                                    $total = '<a href="#" rel="popover" data-toggle="popover" data-target-selector="#records-activated'.$index.'" data-title="Records for Import #'.$row['import'].'" style="color: #337ab7;">Total: '.$row['totalrecords'].'</a></div><br/>';
+                                    $total .= '<div id="records-activated'.$index.'" class="hidden">
+                                                            <p>'.$row['totalrecordsIds'].'</p>
+                                                       </div>';
+                                    $index++;
+                                }
+
+                                $resultsUser = $module->queryLogs("
+                                    select log_id, edoc, user 
+                                    where project_id = '".$_GET['pid']."' AND message='DataUser' AND edoc='".$row['edoc']."'
+                                    order by log_id desc
+                                ");
+                                $user = "";
+                                if($rowUser = $resultsUser->fetch_assoc()){
+                                    $user = $rowUser['user'];
+                                }
+
                                 ?>
                                 <tr>
                                     <td><?= $row['timestamp'] ?></td>
                                     <td><?= $row['file'] ?></td>
-                                    <td style="text-align: center"><?= $row['totalrecords'] ?></td>
+                                    <td><?= $user ?></td>
+                                    <td style="text-align: center"><?= $total ?></td>
                                     <td style="text-align: center"><?= $status ?></td>
                                     <td style="text-align: center"><?= $checked ?></td>
                                     <td style="text-align: center"><?= $row['import'] ?></td>

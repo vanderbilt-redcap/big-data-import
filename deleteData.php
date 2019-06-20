@@ -24,6 +24,8 @@ if ($edoc) {
         }
         $module->setProjectSetting('import-number', $import_number);
 
+        $module->removeLogs("project_id = $project_id AND message = 'DataUser' AND edoc = $edoc");
+
         \REDCap::logEvent("File <b>deleted</b> via <i>Big Data Import</i> external module\n <b>Import #".$import_number_current."</b>","user = ".USERID."\nFile = '".$module->getDocName($edoc)."'\nImport = ".$import_number_current,null,null,null,$project_id);
 
         $module->resetValues($project_id,$edoc);

@@ -47,6 +47,11 @@ foreach($_FILES as $key=>$value){
             array_push($edoc_list,$edoc);
             $module->setProjectSetting('edoc', $edoc_list);
 
+            $module->log("DataUser", [
+                'edoc' => $edoc,
+                'user' => USERID
+            ]);
+
             \REDCap::logEvent("File <b>submitted</b> via <i>Big Data Import</i> external module\n <b>Import #".$total_import."</b>","user = ".USERID."\nFile = '".$module->getDocName($edoc)."\nImport = ".$total_import."\nDelimiter = ".$_REQUEST['csvDelimiter'].$checked_log,null,null,null,$pid);
         } else {
             header('Content-type: application/json');
