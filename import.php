@@ -271,7 +271,7 @@
                             select log_id, timestamp, totalrecords, file, status, import, checked, totalrecordsIds, edoc 
                             where project_id = '".$_GET['pid']."' AND message='Data'
                             order by log_id desc
-                            limit 10
+                            limit 5
                         ");
 
                         if($results->num_rows === 0){
@@ -383,7 +383,7 @@
                 $details = $row['details'];
                 $import = $row['import'];
                 $delimiter = $row['delimiter'];
-                if($row['message'] != "Data") {
+                if($row['message'] != "Data" && $row['message'] != "DataUser") {
                     ?>
                     <tr>
                         <td><?= $row['timestamp'] ?></td>
@@ -400,8 +400,8 @@
                             <?php }else  if (!empty($import)) { ?>
                                 <div>Import #<?= $import ?></div>
                                 <?php if (!empty($delimiter)) { ?>
-                                <div>Delimiter: <?= $delimiter ?></div>
-                            <?php } ?>
+                                    <div>Delimiter: <?= $delimiter ?></div>
+                                <?php } ?>
                             <?php } ?>
                         </td>
                     </tr>

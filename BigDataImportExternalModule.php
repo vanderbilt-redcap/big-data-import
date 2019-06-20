@@ -30,12 +30,14 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         $this->setProjectSetting('import', $import_started,$localProjectId);
 
                         $error = $this->importRecords($localProjectId, $edoc,$id,$import_number);
-                        if(!$error){
+                        if($error == "0"){
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
-                        }else{
+                            $this->log($logtext,['import' => $import_number]);
+                        }else if($error == "1"){
                             $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
+                            $this->log($logtext,['import' => $import_number]);
                         }
-                        $this->log($logtext,['import' => $import_number]);
+
                     }else if($import_checked && $edoc != "" && !$import_check_started){
                         $import_check_started_aux = $this->getProjectSetting('import-checked-started', $localProjectId);
                         $import_check_started_aux[$id] = true;
@@ -129,12 +131,18 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             if($data && strpos($checked_records,$record) === false && $record != "") {
                 $checked_records .= $record . ", ";
             }else if($record == ""){
-                $checked_records_errors .= ($i+1);
+                $checked_records_errors .= ($i+1). ", ";
             }
         }
         $checked_records_errors = rtrim($checked_records_errors, ", ");
         $checked_records = rtrim($checked_records, ", ");
         if($checked_records != "" || $checked_records_errors != ""){
+            $sql = "select app_title from redcap_projects where project_id = '".db_escape($project_id)."' limit 1";
+            $q = db_query($sql);
+            $projectTitle = "";
+            while ($row = db_fetch_assoc($q)) {
+                $projectTitle = $row['app_title'];
+            }
             if($checked_records_errors != ""){
                 $this->resetValues($project_id, $edoc);
 
@@ -153,13 +161,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $email_text = "Your checking process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>There are existing records in the project.";
                 $email_text .="<br/><br/>To continue with the import go to <a href='" . $this->getUrl('import.php') . "'>this page and click on <b>Continue Import</b></a>";
                 $subject = 'Checking process has finished with existing records';
-            }
-
-            $sql = "select app_title from redcap_projects where project_id = '".db_escape($project_id)."' limit 1";
-            $q = db_query($sql);
-            $projectTitle = "";
-            while ($row = db_fetch_assoc($q)) {
-                $projectTitle = $row['app_title'];
             }
 
             if ($import_email != "") {
@@ -348,7 +349,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'checked' =>$import_checked,
                     'import' => $import_number
                 ]);
-                return true;
+                return "1";
             }
             $import_cancel = $this->getProjectSetting('import-cancel', $project_id)[$id];
             if($import_cancel){
@@ -363,7 +364,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'checked' =>$import_checked,
                     'import' => $import_number
                 ]);
-                return true;
+                return "2";
             }
         }
 
@@ -382,7 +383,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $email_text .= "<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
             REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' finished', $email_text);
         }
-        return false;
+        return "0";
     }
 
     private function adjustSaveResults($results){
