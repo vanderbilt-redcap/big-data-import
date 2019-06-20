@@ -25,7 +25,7 @@ function anyFilesWithChecks(fileInput){
             var data = JSON.parse(returnData);
             if(data.checked){
                 if(fileInput.value != ""){
-                    simpleDialog('You can only check for existing records one file at a time.', '<span class="error-title">Multiple existing records checked files</span>', null, 500);
+                    simpleDialog('There is currently a file being uploaded and file checking can not occur during an active upload.', '<span class="error-title">Multiple existing records checked files</span>', null, 500);
                     fileInput.value = '';
                     $('#import').css('cursor', 'not-allowed');
                     $('#import').prop('disabled', true);
