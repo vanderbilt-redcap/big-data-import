@@ -43,6 +43,10 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         $import_check_started_aux[$id] = true;
                         $this->setProjectSetting('import-checked-started', $import_check_started_aux,$localProjectId);
 
+                        $import_cancel = $this->getProjectSetting('import-cancel', $localProjectId);
+                        $import_cancel[$id] = true;
+                        $this->setProjectSetting('import-cancel', $import_cancel,$localProjectId);
+
                         $error = $this->checkRecords($localProjectId, $edoc,$id,$import_number);
 
                         if(!$error){
@@ -153,6 +157,11 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
                 $subject = 'Checking process has finished with blank records';
             }else{
+                $import_cancel = $this->getProjectSetting('import-cancel', $project_id);
+                $import_cancel[$id] = false;
+                $this->setProjectSetting('import-cancel', $import_cancel,$project_id);
+
+
                 $this->log("There are existing records in the project that match the excel file <span class='fa fa-times  fa-fw'></span>", [
                     'recordlist' => $checked_records
                 ]);
@@ -171,6 +180,10 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $import_continue = $this->getProjectSetting('import-continue', $project_id);
             $import_continue[$id] = true;
             $this->setProjectSetting('import-continue', $import_continue,$project_id);
+
+            $import_cancel = $this->getProjectSetting('import-cancel', $project_id);
+            $import_cancel[$id] = false;
+            $this->setProjectSetting('import-cancel', $import_cancel,$project_id);
 
             $import = $this->getProjectSetting('import', $project_id);
             $import[$id] = true;
