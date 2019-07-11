@@ -16,7 +16,6 @@ function fileValidation(fileInput) {
 }
 
 function anyFilesWithChecks(fileInput){
-    console.log("url:"+anyFilesWithChecks_url)
     $.ajax({
         url: anyFilesWithChecks_url,
         data: "&pid="+pid,
@@ -101,7 +100,6 @@ function deleteAndCancel(edoc){
         type: 'POST',
         success: function(returnData) {
             var data = JSON.parse(returnData);
-            console.log(data)
             if (data.status == 'success') {
                 var url = window.location.href;
                 if(url.match(/(&message=)([A-Z]{1})/)){
