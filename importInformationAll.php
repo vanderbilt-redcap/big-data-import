@@ -183,7 +183,10 @@ $docname = "BigDataImport_".date("Y-m-d H:s");
                 if($results->num_rows === 0){
                     ?>
                     <tr>
-                        <td colspan="7">No import logs available</td>
+                        <td colspan="10">No import logs available</td>
+                        <td style="display: none;"></td>
+                        <td style="display: none;"></td>
+                        <td style="display: none;"></td>
                         <td style="display: none;"></td>
                         <td style="display: none;"></td>
                         <td style="display: none;"></td>

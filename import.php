@@ -255,7 +255,7 @@
                     </h3>
                 </div>
 
-                <div id="collapse1" class="table-responsive panel-collapse collapse in" aria-expanded="true" aria-controls="collapse1">
+                <div id="collapse1" class="table-responsive panel-collapse collapse show" data-toggle="collapse" aria-expanded="true" aria-controls="collapse1">
                     <table class="table panel-table" data-sortable>
                     <thead>
                     <tr>
@@ -392,7 +392,7 @@
                     <tr>
                         <td><?= $row['timestamp'] ?></td>
                         <td class="message"><?= $row['message'] ?></td>
-                        <td><?= $row['recordlist'] ?></td>
+                        <td style="width:100px"><?= $row['recordlist'] ?></td>
                         <td>
                             <?php if (!empty($details)) { ?>
                                 <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?= $logId ?>,<?= $import ?>)">
