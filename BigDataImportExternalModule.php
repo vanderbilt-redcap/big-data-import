@@ -277,38 +277,40 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $data = array();
             $numrecords = 0;
             for ($line = 1; $line <= $chunks; $line++) {
-                $data_aux = str_getcsv($content[($line + $count)], $delimiter, '"');
-                $aux = array();
-                $instrument = "";
-                $instance = "";
-                $record = $data_aux[0];
-                foreach ($fieldNames as $index => $field) {
-                    if($field == "redcap_repeat_instrument") {
-                        $instrument = $data_aux[$index];
-                    }else if($field == "redcap_repeat_instance") {
-                        $instance = $data_aux[$index];
-                    }else if($field == "redcap_event_name"){
-                        $event_id = $Proj->getEventIdUsingUniqueEventName( $data_aux[$index]);
-                    }else{
-                        $aux[$field] = $data_aux[$index];
+                if($count <= (count($content)-1)){
+                    $data_aux = str_getcsv($content[($line + $count)], $delimiter, '"');
+                    $aux = array();
+                    $instrument = "";
+                    $instance = "";
+                    $record = $data_aux[0];
+                    foreach ($fieldNames as $index => $field) {
+                        if ($field == "redcap_repeat_instrument") {
+                            $instrument = $data_aux[$index];
+                        } else if ($field == "redcap_repeat_instance") {
+                            $instance = $data_aux[$index];
+                        } else if ($field == "redcap_event_name") {
+                            $event_id = $Proj->getEventIdUsingUniqueEventName($data_aux[$index]);
+                        } else {
+                            $aux[$field] = $data_aux[$index];
+                        }
                     }
-                }
-                if($repeatable){
-                    if($instance != ""){
-                        $data[$record]['repeat_instances'][$event_id][$instrument][$instance] = $aux;
-                    }else{
+                    if ($repeatable) {
+                        if ($instance != "") {
+                            $data[$record]['repeat_instances'][$event_id][$instrument][$instance] = $aux;
+                        } else {
+                            $data[$record][$event_id] = $aux;
+                        }
+                    } else {
+                        $data[$record] = array();
                         $data[$record][$event_id] = $aux;
                     }
-                }else{
-                    $data[$record] = array();
-                    $data[$record][$event_id] = $aux;
-                }
-                if(strpos($import_records,$record) === false){
-                    $import_records .= $record.", ";
-                    $numrecords++;
-                }
-                if(strpos($totalrecordsIds,$record) === false){
-                    $totalrecordsIds .= $record.", ";
+                    if (strpos($import_records, $record) === false) {
+                        $import_records .= $record . ", ";
+                        $numrecords++;
+                    }
+                    if (strpos($totalrecordsIds, $record) === false) {
+                        $totalrecordsIds .= $record . ", ";
+                    }
                 }
             }
             $count += $chunks;
