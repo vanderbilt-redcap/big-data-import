@@ -242,8 +242,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         if(round($numberOfBatches) <= 0){
             $numberOfBatches = 1;
         }
-        $batchSize = round((count($content)-1) / $numberOfBatches);
-        $chunks = round((count($content)-1) / $batchSize);
+        $chunks = ceil($numberOfBatches);
+        $batchSize = ceil((count($content)-1) / $chunks);
 
         $Proj = new \Project($project_id);
         $event_id = $Proj->firstEventId;
