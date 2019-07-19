@@ -277,7 +277,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $data = array();
             $numrecords = 0;
             for ($line = 1; $line <= $chunks; $line++) {
-                if($count <= (count($content)-1)){
+                if(($count+$line) <= (count($content)-1)){
                     $data_aux = str_getcsv($content[($line + $count)], $delimiter, '"');
                     $aux = array();
                     $instrument = "";
