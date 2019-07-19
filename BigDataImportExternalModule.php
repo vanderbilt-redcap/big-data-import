@@ -271,6 +271,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
         $count = 0;
         $totalrecordsIds = "";
+        $warnings = "";
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
@@ -315,7 +316,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
             $count += $chunks;
             $results = \Records::saveData($project_id, 'array', $data, 'normal', 'MDY', 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
-            $results = $this->adjustSaveResults($results);
+            $results = $this->adjustSaveResults($results,$fieldNames);
             $stopEarly = false;
             if (empty($results['errors'])) {
                 $message = "completed ";
@@ -324,6 +325,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $message .= 'successfully for';
                 } else {
                     $message .= 'with warnings for';
+                    if(strpos($warnings, $results['warnings']) === false){
+                        $warnings .= $results['warnings'];
+                    }
                 }
             } else {
                 $message = "did NOT complete successfully.<br> Errors in";
@@ -391,10 +395,16 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $email_text .= "<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
             REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' finished', $email_text);
         }
+        if(!empty($warnings)){
+            $this->log("Import #$import_number finished with warnings <span class='fa fa-exclamation-circle warning fa-fw'></span>", [
+                'details' => $warnings,
+                'import' => $import_number
+            ]);
+        }
         return "0";
     }
 
-    private function adjustSaveResults($results){
+    private function adjustSaveResults($results,$fieldNames){
         $results['warnings'] = array_filter($results['warnings'], function($warning){
             global $lang;
 
@@ -404,6 +414,17 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
             return true;
         });
+
+        if(empty($results['warnings'])){
+            foreach ($results['values'] as $warnings){
+                foreach ($fieldNames as $name){
+                    if(array_key_exists('validation',$warnings[$name]) && $warnings[$name]['validation'] == 'warning'){
+                        $results['warnings'] .= $warnings[$name]['message']."\n";
+                    }
+                }
+            }
+
+        }
 
         return $results;
     }

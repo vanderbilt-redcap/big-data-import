@@ -26,6 +26,9 @@
 .fa-times,.fa-exclamation-circle, .fa-ban{
     color: red;
 }
+.warning{
+    color:#ffd24d !important;
+}
 .dataTables_wrapperm,#big-data-module-wrapper{
     max-width: 800px;
 }
