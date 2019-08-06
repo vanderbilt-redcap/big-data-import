@@ -182,19 +182,57 @@ $import = $module->getProjectSetting('import');
             </form>
 
         </div>
+        <?php
+        $count = 0;
+        foreach ($edoc_list as $index => $edoc) {
+            if ((((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) || !($import_check_started[$index] && !$import_cancel[$index])) && $count == 0) {
+                echo '<div><a onclick="startImport()" id="start" class="btn" style="font-size: 13px;color: #fff;background-color: #00b300;border-color: #00b300;cursor:not-allowed" disabled>Start</a></div>';
+                $count++;
+            }
+        }
+        ?>
         <div>
-                <div>
-                    <div style="display: inline-block;" class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
-                    <?php
-                    $count = 0;
-                    foreach ($edoc_list as $index => $edoc) {
-                        if ((((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) || !($import_check_started[$index] && !$import_cancel[$index])) && $count == 0) {
-                            echo '<div style="display: inline-block;float: right;"><a onclick="startImport()" id="start" class="btn" style="font-size: 13px;color: #fff;background-color: #00b300;border-color: #00b300;cursor:not-allowed" disabled>Start</a></div>';
-                            $count++;
+            <div class="pendingFile"><span class="fa fa-clock fa-search"></span> Checked files:</div>
+            <?php
+            $docs = "";
+            $count_file = 0;
+            foreach ($edoc_list as $index => $edoc){
+                $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+                $q = db_query($sql);
+
+                if ($error = db_error()) {
+                    die($sql . ': ' . $error);
+                }
+                while ($row = db_fetch_assoc($q)) {
+                    if($import_checked[$index] && !$import_continue[$index]) {
+                        $count_file++;
+                        $delete = "";
+                        $continue_btn = "";
+                        if(!$import_check_started[$index]){
+                            $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
+                        }else if($import_check_started[$index] && !$import_cancel[$index]){
+                            $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
+                            $continue_btn = "<a onclick='continueImport(" . $edoc . ")' class='btn btn-success' style='float: right;font-size: 13px;color: #fff;' id='continue-import'>Continue Import</a></span>";
+                        }else{
+                            $delete = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
                         }
+
+                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."<span>".$continue_btn."</div>";
                     }
-                    ?>
-                </div>
+                }
+            }
+
+            if($docs != ""){
+                echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;max-width: 800px;padding-bottom: 25px;'>".$docs."</div>";
+            }else{
+                echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;max-width: 800px;'><div><i>None</i></div>";
+            }
+            echo "";
+            ?>
+        </div>
+        <div>
+                <div class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
+
                 <div class='alert alert-primary' style='border:1px solid #b8daff !important;max-width: 800px' id="pending-files-div">
                 <?php
                 $docs = "";
@@ -226,43 +264,6 @@ $import = $module->getProjectSetting('import');
                 echo "";
                 ?>
                 </div>
-        </div>
-        <div>
-            <div class="pendingFile"><span class="fa fa-clock fa-search"></span> Checked files:</div>
-                <?php
-                $docs = "";
-                $count_file = 0;
-                foreach ($edoc_list as $index => $edoc){
-                    $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
-                    $q = db_query($sql);
-
-                    if ($error = db_error()) {
-                        die($sql . ': ' . $error);
-                    }
-                    while ($row = db_fetch_assoc($q)) {
-                        if($import_checked[$index] && !$import_continue[$index]) {
-                            $count_file++;
-                            $delete = "";
-                            $continue_btn = "";
-                            if(!$import_check_started[$index]){
-                                $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
-                            }else if($import_check_started[$index] && !$import_cancel[$index]){
-                                $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
-                                $continue_btn = "<a onclick='continueImport(" . $edoc . ")' class='btn btn-success' style='float: right;font-size: 13px;color: #fff;' id='continue-import'>Continue Import</a></span>";
-                            }
-
-                            $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."<span>".$continue_btn."</div>";
-                        }
-                    }
-                }
-
-                if($docs != ""){
-                    echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;max-width: 800px;padding-bottom: 25px;'>".$docs."</div>";
-                }else{
-                    echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;max-width: 800px;'><div><i>None</i></div>";
-                }
-                echo "";
-                ?>
         </div>
         <div style="padding-top: 20px">
            <div class="panel panel-default">
