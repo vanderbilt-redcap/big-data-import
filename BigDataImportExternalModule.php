@@ -55,6 +55,14 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                             $logtext = "<div>Checking process finished with issues <span class='fa fa-exclamation-circle fa-fw'></span></div>";
                         }
                         $this->log($logtext,['import' => $import_number]);
+
+                        if(!$error){
+                            $import_after_check = $this->getProjectSetting('import', $localProjectId);
+                            $import_after_check[$id] = true;
+                            if($import_after_check){
+                                $this->cronbigdata();
+                            }
+                        }
                     }
                 }
             }

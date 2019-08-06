@@ -185,8 +185,8 @@ $import = $module->getProjectSetting('import');
         <?php
         $count = 0;
         foreach ($edoc_list as $index => $edoc) {
-            if ((((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) || !($import_check_started[$index] && !$import_cancel[$index])) && $count == 0) {
-                echo '<div><a onclick="startImport()" id="start" class="btn" style="font-size: 13px;color: #fff;background-color: #00b300;border-color: #00b300;cursor:not-allowed" disabled>Start</a></div>';
+            if (((((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) && $import[$index]) || !($import_check_started[$index] && !$import_cancel[$index])) && $count == 0) {
+                echo '<div><a onclick="startImport()" id="start" class="btn" style="font-size: 13px;color: #fff;background-color: #00b300;border-color: #00b300;cursor:not-allowed" disabled>Start Process</a></div>';
                 $count++;
             }
         }
