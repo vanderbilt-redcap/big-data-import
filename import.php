@@ -1,10 +1,21 @@
+<?php
+ignore_user_abort(true);
+set_time_limit(0);
 
+$edoc_list = $module->getProjectSetting('edoc');
+$import_cancel = $module->getProjectSetting('import-cancel');
+$import_checked = $module->getProjectSetting('import-checked');
+$import_check_started = $module->getProjectSetting('import-checked-started');
+$import_continue = $module->getProjectSetting('import-continue');
+$import = $module->getProjectSetting('import');
+?>
 <link rel="stylesheet" type="text/css" href="<?=$module->getUrl('css/style.css')?>">
 <script type="text/javascript" src="<?=$module->getUrl('js/functions.js')?>"></script>
 <script>
     var deleteData_url = <?=json_encode($module->getUrl('deleteData.php'))?>;
     var cancelImport_url = <?=json_encode($module->getUrl('cancelImport.php'))?>;
     var deleteLogs_url = <?=json_encode($module->getUrl('deleteLogs.php'))?>;
+    var startImport_url = <?=json_encode($module->getUrl('startImport.php'))?>;
     var continueImport_url = <?=json_encode($module->getUrl('continueImport.php'))?>;
     var anyFilesWithChecks_url = <?=json_encode($module->getUrl('anyFilesWithChecks.php'))?>;
     var pid = <?=json_encode($_GET['pid'])?>;
@@ -15,6 +26,14 @@
             bLengthChange: true,
             pageLength: 50
         });
+
+        if (($("#pending-files-div").children().length > 0 && $('#pending-files-div').first().text().trim() != "None") || (($("#checked-files-div").children().length > 0 && $('#checked-files-div').first().text().trim() != "None"))) {
+            $('#start').prop('disabled',false);
+            $('#start').css('cursor','pointer');
+        }else{
+            $('#start').css('cursor', 'not-allowed');
+            $('#start').prop('disabled', true);
+        }
 
         $('#deleteLogsForm').submit(function () {
             deleteLogs();
@@ -164,14 +183,20 @@
 
         </div>
         <div>
-                <div class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
-                <div class='alert alert-primary' style='border:1px solid #b8daff !important;max-width: 800px'>
+                <div>
+                    <div style="display: inline-block;" class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
+                    <?php
+                    $count = 0;
+                    foreach ($edoc_list as $index => $edoc) {
+                        if ((((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) || !($import_check_started[$index] && !$import_cancel[$index])) && $count == 0) {
+                            echo '<div style="display: inline-block;float: right;"><a onclick="startImport()" id="start" class="btn" style="font-size: 13px;color: #fff;background-color: #00b300;border-color: #004d00;cursor:not-allowed" disabled>Start</a></div>';
+                            $count++;
+                        }
+                    }
+                    ?>
+                </div>
+                <div class='alert alert-primary' style='border:1px solid #b8daff !important;max-width: 800px' id="pending-files-div">
                 <?php
-                $edoc_list = $module->getProjectSetting('edoc');
-                $import_cancel = $module->getProjectSetting('import-cancel');
-                $import_checked = $module->getProjectSetting('import-checked');
-                $import_continue = $module->getProjectSetting('import-continue');
-                $import = $module->getProjectSetting('import');
                 $docs = "";
                 $count_file = 0;
                 foreach ($edoc_list as $index => $edoc){
@@ -205,12 +230,6 @@
         <div>
             <div class="pendingFile"><span class="fa fa-clock fa-search"></span> Checked files:</div>
                 <?php
-                $edoc_list = $module->getProjectSetting('edoc');
-                $import_cancel = $module->getProjectSetting('import-cancel');
-                $import_checked = $module->getProjectSetting('import-checked');
-                $import_check_started = $module->getProjectSetting('import-checked-started');
-                $import_continue = $module->getProjectSetting('import-continue');
-                $import = $module->getProjectSetting('import');
                 $docs = "";
                 $count_file = 0;
                 foreach ($edoc_list as $index => $edoc){
@@ -229,7 +248,7 @@
                                 $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
                             }else if($import_check_started[$index] && !$import_cancel[$index]){
                                 $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle'></span></a>";
-                                $continue_btn = "<a onclick='continueImport(" . $edoc . ")' class='btn btn-success' style='float: right;font-size: 13px;color: #fff;'>Continue Import</a></span>";
+                                $continue_btn = "<a onclick='continueImport(" . $edoc . ")' class='btn btn-success' style='float: right;font-size: 13px;color: #fff;' id='continue-import'>Continue Import</a></span>";
                             }
 
                             $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."<span>".$continue_btn."</div>";
@@ -238,9 +257,9 @@
                 }
 
                 if($docs != ""){
-                    echo "<div class='alert alert-warning' style='border:1px solid #ffeeba !important;max-width: 800px;padding-bottom: 25px;'>".$docs."</div>";
+                    echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;max-width: 800px;padding-bottom: 25px;'>".$docs."</div>";
                 }else{
-                    echo "<div class='alert alert-warning' style='border:1px solid #ffeeba !important;max-width: 800px;'><div><i>None</i></div>";
+                    echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;max-width: 800px;'><div><i>None</i></div>";
                 }
                 echo "";
                 ?>

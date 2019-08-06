@@ -178,6 +178,31 @@ function deleteLogs(){
     });
 }
 
+function startImport(){
+    $.ajax({
+        url: startImport_url,
+        data: "&pid="+pid,
+        type: 'POST',
+        success: function(returnData) {
+            var data = JSON.parse(returnData);
+            if (data.status == 'success') {
+                var url = window.location.href;
+                if(url.match(/(&message=)([A-Z]{1})/)){
+                    url = url.replace( /(&message=)([A-Z]{1})/, "&message=I" );
+                }else{
+                    url = url + "&message=I";
+                }
+                window.location = url;
+            }else{
+                simpleDialog(data.status+" One or more of the files could not be deleted."+JSON.stringify(data), 'Error', null, 500);
+            }
+        },
+        error: function(e) {
+            simpleDialog("One or more of the files could not be saved."+JSON.stringify(e), 'Error', null, 500);
+        }
+    });
+}
+
 function continueImport(edoc){
     $.ajax({
         url: continueImport_url,
@@ -186,6 +211,7 @@ function continueImport(edoc){
         success: function(returnData) {
             var data = JSON.parse(returnData);
             if (data.status == 'success') {
+                startImport();
                 var url = window.location.href;
                 if(url.match(/(&message=)([A-Z]{1})/)){
                     url = url.replace( /(&message=)([A-Z]{1})/, "&message=I" );

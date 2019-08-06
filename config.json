@@ -33,15 +33,6 @@
 			"type": "textarea"
 		}
 	],
-	"crons": [
-		{
-			"cron_name": "cronbigdata",
-			"cron_description": "Big Data Import External Module",
-			"method": "cronbigdata",
-			"cron_frequency": "1",
-			"cron_max_run_time": "7200"
-		}
-	],
 	"compatibility": {
 		"php-version-min": "5.5.0",
 		"php-version-max": "",
