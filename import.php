@@ -210,14 +210,14 @@ $import = $module->getProjectSetting('import');
                         $continue_btn = "";
                         if(!$import_check_started[$index]){
                             $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle' id='check_delete'></span></a>";
+                            $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='check_spinner'></span>";
                         }else if($import_check_started[$index] && !$import_cancel[$index]){
                             $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle' id='check_delete'></span></a>";
                             $continue_btn = "<a onclick='continueImport(" . $edoc . ")' class='btn btn-success' style='float: right;font-size: 13px;color: #fff;' id='continue-import'>Continue Import</a></span>";
+                            $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='check_spinner'></span>";
                         }else{
                             $delete = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
                         }
-                        $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='check_spinner'></span>";
-
 
                         $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."<span>".$continue_btn."</div>";
                     }
