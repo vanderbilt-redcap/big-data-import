@@ -182,9 +182,17 @@ function startImport(){
     if (($("#checked-files-div").children().length > 0 && $('#checked-files-div').first().text().trim() != "None")) {
         $('#check_spinner').show();
         $('#check_delete').hide();
-    }else{
+    }else if($("#checked-files-div").children().length > 0){
         $('#check_spinner').hide();
         $('#check_delete').show();
+    }
+
+    if($("#pending-files-div").children().length > 0 && $('#pending-files-div').first().text().trim() != "None"){
+        $('#pending_spinner').show();
+        $('#pending_delete').hide();
+    }else if($("#pending-files-div").children().length > 0){
+        $('#pending_spinner').hide();
+        $('#pending_delete').show();
     }
 
     $.ajax({
