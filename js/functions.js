@@ -179,6 +179,14 @@ function deleteLogs(){
 }
 
 function startImport(){
+    if (($("#checked-files-div").children().length > 0 && $('#checked-files-div').first().text().trim() != "None")) {
+        $('#check_spinner').show();
+        $('#check_delete').hide();
+    }else{
+        $('#check_spinner').hide();
+        $('#check_delete').show();
+    }
+
     $.ajax({
         url: startImport_url,
         data: "&pid="+pid,
