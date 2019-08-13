@@ -11,7 +11,7 @@ $import = $module->getProjectSetting('import');
 
 $disabled = '';
 foreach ($edoc_list as $index => $edoc) {
-    if (($import_checked[$index] && !$import_continue[$index] && $import_check_started[$index] && !$import_cancel[$index]) || (!$import[$index] && !$import_checked[$index])) {
+    if (($import_checked[$index] && !$import_continue[$index] && $import_check_started[$index] && !$import_cancel[$index]) || (!$import[$index] && !$import_checked[$index]) || ($import_check_started[$index] && $import_checked[$index])) {
         $disabled = 'disabled';
     }
 }
