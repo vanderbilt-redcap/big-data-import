@@ -179,6 +179,9 @@ function deleteLogs(){
 }
 
 function startImport(){
+    $('#start').hide();
+    $('#importFile').attr('disabled',true);
+
     if (($("#checked-files-div").children().length > 0 && $('#checked-files-div').first().text().trim() != "None")) {
         $('#check_spinner').show();
         $('#check_delete').hide();
@@ -220,6 +223,9 @@ function startImport(){
 }
 
 function continueImport(edoc){
+    $('#start').hide();
+    $('#importFile').attr('disabled',true);
+
     $.ajax({
         url: continueImport_url,
         data: "&pid="+pid+"&edoc="+edoc,

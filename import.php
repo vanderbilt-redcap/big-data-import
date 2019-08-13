@@ -8,6 +8,13 @@ $import_checked = $module->getProjectSetting('import-checked');
 $import_check_started = $module->getProjectSetting('import-checked-started');
 $import_continue = $module->getProjectSetting('import-continue');
 $import = $module->getProjectSetting('import');
+
+$disabled = '';
+foreach ($edoc_list as $index => $edoc) {
+    if (($import_checked[$index] && !$import_continue[$index] && $import_check_started[$index] && !$import_cancel[$index]) || !$import[$index]) {
+        $disabled = 'disabled';
+    }
+}
 ?>
 <link rel="stylesheet" type="text/css" href="<?=$module->getUrl('css/style.css')?>">
 <script type="text/javascript" src="<?=$module->getUrl('js/functions.js')?>"></script>
@@ -176,8 +183,9 @@ $import = $module->getProjectSetting('import');
                 </div>
                 <div style="padding-bottom: 12px">
                     <label style="padding-right: 30px;">Select a CSV file to import:</label>
-                    <input type="file" id="importFile" onchange="return fileValidation(this)">
+                    <input type="file" id="importFile" onchange="return fileValidation(this)" <?=$disabled?>>
                     <input type="submit" id="import" class="btn" style="color: #fff;background-color: #007bff;border-color: #007bff;cursor:not-allowed" disabled>
+                    <p style="color: red;font-style: italic">Note: Once you hit start you can't upload more files until the process has finished.</p>
                 </div>
             </form>
 
@@ -186,8 +194,10 @@ $import = $module->getProjectSetting('import');
         $count = 0;
         foreach ($edoc_list as $index => $edoc) {
             if (((((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) && $import[$index]) || !($import_check_started[$index] && !$import_cancel[$index])) && $count == 0) {
-                echo '<div><a onclick="startImport()" id="start" class="btn" style="font-size: 13px;color: #fff;background-color: #00b300;border-color: #00b300;cursor:not-allowed" disabled>Start Process</a></div>';
-                $count++;
+                if($disabled == "") {
+                    echo '<div><a onclick="startImport()" id="start" class="btn" style="font-size: 13px;color: #fff;background-color: #00b300;border-color: #00b300;cursor:not-allowed" disabled>Start Process</a></div>';
+                    $count++;
+                }
             }
         }
         ?>
