@@ -5,7 +5,7 @@ $status = "success";
 if ($edoc) {
     $import = $module->getProjectSetting('import');
     $import_check_started = $module->getProjectSetting('import-checked-started');
-    $import_continue = $module->getProjectSetting('import-ccontinue');
+    $import_continue = $module->getProjectSetting('import-continue');
     $edoc_list = $module->getProjectSetting('edoc');
 
     $index = "";

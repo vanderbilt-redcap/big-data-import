@@ -227,6 +227,18 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $delimiter = "\t";
         }
 
+        $overwrite = $this->getProjectSetting('import-overwrite',$project_id)[$id];
+        if($overwrite){
+            $overwrite = "overwrite";
+        }else{
+            $overwrite = "normal";
+        }
+
+        $datetime = $this->getProjectSetting('import-datetime',$project_id)[$id];
+        if($datetime == ""){
+            $overwrite = "MDY";
+        }
+
         $this->log("
         <div>Importing records from CSV file:</div>
         <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
@@ -323,7 +335,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 }
             }
             $count += $chunks;
-            $results = \Records::saveData($project_id, 'array', $data, 'normal', 'MDY', 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
+            $results = \Records::saveData($project_id, 'array', $data, $overwrite, $datetime, 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
             $results = $this->adjustSaveResults($results,$fieldNames);
             $stopEarly = false;
             if (empty($results['errors'])) {
@@ -444,6 +456,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_number = $this->getProjectSetting('import-number',$project_id);
         $import_cancel = $this->getProjectSetting('import-cancel',$project_id);
         $import_delimiter = $this->getProjectSetting('import-delimiter');
+        $import_datetime = $this->getProjectSetting('import-overwrite');
+        $import_overwrite = $this->getProjectSetting('import-datetime');
         $import_checked = $this->getProjectSetting('import-checked');
         $import_continue = $this->getProjectSetting('import-continue');
         $import_check_started = $this->getProjectSetting('import-checked-started');
@@ -454,6 +468,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             unset($import_number[$key]);
             unset($import_cancel[$key]);
             unset($import_delimiter[$key]);
+            unset($import_datetime[$key]);
+            unset($import_overwrite[$key]);
             unset($import_checked[$key]);
             unset($import_continue[$key]);
             unset($import_check_started[$key]);
@@ -463,6 +479,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $this->setProjectSetting('import-number', $import_number,$project_id);
         $this->setProjectSetting('import-cancel', $import_cancel,$project_id);
         $this->setProjectSetting('import-delimiter', $import_delimiter,$project_id);
+        $this->setProjectSetting('import-datetime', $import_datetime,$project_id);
+        $this->setProjectSetting('import-overwrite', $import_overwrite,$project_id);
         $this->setProjectSetting('import-checked', $import_checked,$project_id);
         $this->setProjectSetting('import-continue', $import_continue,$project_id);
         $this->setProjectSetting('import-checked-started', $import_check_started,$project_id);

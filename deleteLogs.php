@@ -10,6 +10,8 @@ if(empty($edoc_list)){
     $module->setProjectSetting('import-number', array());
     $module->setProjectSetting('import-cancel', array());
     $module->setProjectSetting('import-delimiter', array());
+    $module->setProjectSetting('import-overwrite', array());
+    $module->setProjectSetting('import-datetime', array());
     $module->setProjectSetting('import-checked', array());
 
     \REDCap::logEvent("<i>Big Data Import</i> Logs <b>deleted</b>","user = ".USERID,null,null,null,$project_id);

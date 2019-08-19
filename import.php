@@ -182,6 +182,23 @@ foreach ($edoc_list as $index => $edoc) {
                     <input type="checkbox" id="checkExisting" name="checkExisting" style="width: 20px;height: 20px;vertical-align: -3px;" onclick="anyFilesWithChecks(document.getElementById('importFile'))" checked>
                 </div>
                 <div style="padding-bottom: 12px">
+                    <label style="padding-right: 30px;">Select to overwrite blank values on existing records:</label>
+                    <input type="checkbox" id="checkOverwrite" name="checkOverwrite" style="width: 20px;height: 20px;vertical-align: -3px;"
+                           onchange="
+									if (!this.checked) return;
+									simpleDialog('Are you sure you wish to REPLACE EXISTING SAVED VALUES WITH BLANK VALUES (i.e., blank cells) from your uploaded CSV file? This means that any cell in the CSV file that is empty/blank (i.e., has no value) will overwrite an existing value for the given record (if the record already has a value for that field).','ARE YOU SURE?',null,null,function(){
+										$('#checkOverwrite').prop('checked', false);
+									},'Cancel','','Yes, I understand');
+                               ">
+                </div>
+                <div style="padding-bottom: 12px">
+                    <label style="padding-right: 30px;">Set format for date and datetime values:</label>
+                    <select name="dateFormat" id="dateFormat" class="select-csv">
+                        <option value="MDY" selected="selected">MM/DD/YYYY or YYYY-MM-DD</option>
+                        <option value="DMY" selected="selected">DD/MM/YYYY or YYYY-MM-DD</option>
+                    </select>
+                </div>
+                <div style="padding-bottom: 12px">
                     <label style="padding-right: 30px;">Select a CSV file to import:</label>
                     <input type="file" id="importFile" onchange="return fileValidation(this)" <?=$disabled?>>
                     <input type="submit" id="import" class="btn" style="color: #fff;background-color: #007bff;border-color: #007bff;cursor:not-allowed" disabled>

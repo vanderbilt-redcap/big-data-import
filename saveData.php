@@ -37,6 +37,14 @@ $import_delimiter = empty($module->getProjectSetting('import-delimiter'))?array(
 array_push($import_delimiter,$_REQUEST['csvDelimiter']);
 $module->setProjectSetting('import-delimiter', $import_delimiter);
 
+$import_datetime = empty($module->getProjectSetting('import-datetime'))?array():$module->getProjectSetting('import-datetime');
+array_push($import_datetime,$_REQUEST['dateFormat']);
+$module->setProjectSetting('import-datetime', $import_datetime);
+
+$import_overwrite = empty($module->getProjectSetting('import-overwrite'))?array():$module->getProjectSetting('import-overwrite');
+array_push($import_overwrite,filter_var($_REQUEST['checkOverwrite'], FILTER_VALIDATE_BOOLEAN));
+$module->setProjectSetting('import-overwrite', $import_overwrite);
+
 foreach($_FILES as $key=>$value){
     $myfiles[] = $key;
     if ($value) {

@@ -62,6 +62,8 @@ function saveFilesIfTheyExist(url) {
         formData.append(name, files[name]);   // filename agnostic
         formData.append('csvDelimiter', $('#csvDelimiter option:selected').val());
         formData.append('checkExisting', $('#checkExisting').is(':checked'));
+        formData.append('dateFormat', $('#dateFormat option:selected').val());
+        formData.append('checkOverwrite', $('#checkOverwrite').is(':checked'));
     }
     if (lengthOfFiles > 0) {
         $.ajax({
