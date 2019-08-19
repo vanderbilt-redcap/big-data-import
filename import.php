@@ -4,6 +4,7 @@ set_time_limit(0);
 
 $edoc_list = $module->getProjectSetting('edoc');
 $import_cancel = $module->getProjectSetting('import-cancel');
+$import_cancel_checked = $module->getProjectSetting('import-cancel-checked');
 $import_checked = $module->getProjectSetting('import-checked');
 $import_check_started = $module->getProjectSetting('import-checked-started');
 $import_continue = $module->getProjectSetting('import-continue');
@@ -231,19 +232,19 @@ foreach ($edoc_list as $index => $edoc) {
                     die($sql . ': ' . $error);
                 }
                 while ($row = db_fetch_assoc($q)) {
-                    if($import_checked[$index] && !$import_continue[$index]) {
+                    if($import_checked[$index] && !$import_continue[$index] && !$import_cancel_checked[$index]) {
                         $count_file++;
                         $delete = "";
                         $continue_btn = "";
                         if(!$import_check_started[$index]){
                             $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle' id='check_delete'></span></a>";
-                            $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='check_spinner'></span>";
+                            $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='check_spinner' spin='".$index."'></span>";
                         }else if($import_check_started[$index] && !$import_cancel[$index]){
                             $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle' id='check_delete'></span></a>";
                             $continue_btn = "<a onclick='continueImport(" . $edoc . ")' class='btn btn-success' style='float: right;font-size: 13px;color: #fff;' id='continue-import'>Continue Import</a></span>";
-                            $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='check_spinner'></span>";
+                            $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='check_spinner' spin='".$index."'></span>";
                         }else{
-                            $delete = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
+                            $delete = " <span class='fa fa-fw fa-spinner fa-spin' spin='".$index."'></span>";
                         }
 
                         $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."<span>".$continue_btn."</div>";
@@ -278,9 +279,9 @@ foreach ($edoc_list as $index => $edoc) {
                             $count_file++;
                             $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle' id='pending_delete'></span></a>";
                             if(!$import[$index]){
-                                $delete = " <span class='fa fa-fw fa-spinner fa-spin'></span>";
+                                $delete = " <span class='fa fa-fw fa-spinner fa-spin' spin='".$index."'></span>";
                             }else{
-                                $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='pending_spinner'></span>";
+                                $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='pending_spinner' spin='".$index."'></span>";
                             }
                             $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."</div>";
                         }

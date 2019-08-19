@@ -26,6 +26,10 @@ $import_cancel = empty($module->getProjectSetting('import-cancel'))?array():$mod
 array_push($import_cancel,false);
 $module->setProjectSetting('import-cancel', $import_cancel);
 
+$import_cancel_check = empty($module->getProjectSetting('import-cancel-check'))?array():$module->getProjectSetting('import-cancel-check');
+array_push($import_cancel_check,false);
+$module->setProjectSetting('import-cancel-check', $import_cancel_check);
+
 $total_import = $module->getProjectSetting('total-import') + 1;
 $module->setProjectSetting('total-import', $total_import);
 

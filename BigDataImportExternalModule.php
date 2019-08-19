@@ -49,12 +49,13 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
                         $error = $this->checkRecords($localProjectId, $edoc,$id,$import_number);
 
-                        if(!$error){
+                        if($error == "0"){
                             $logtext = "<div>Checking process finished <span class='fa fa-check fa-fw'></span></div>";
-                        }else{
+                            $this->log($logtext,['import' => $import_number]);
+                        }else if($error == "1"){
                             $logtext = "<div>Checking process finished with issues <span class='fa fa-exclamation-circle fa-fw'></span></div>";
+                            $this->log($logtext,['import' => $import_number]);
                         }
-                        $this->log($logtext,['import' => $import_number]);
 
                         if(!$error){
                             $import_after_check = $this->getProjectSetting('import', $localProjectId);
@@ -90,6 +91,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $this->setProjectSetting('import', array());
             $this->setProjectSetting('import-number', array());
             $this->setProjectSetting('import-cancel', array());
+            $this->setProjectSetting('import-cancel-check', array());
             $this->setProjectSetting('import-delimiter', array());
             $this->setProjectSetting('import-checked', array());
             $this->setProjectSetting('import-continue', array());
@@ -137,14 +139,22 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $checked_records = "";
         $checked_records_errors = "";
         for ($i = 1; $i < count($content); $i++) {
-            $data_aux = str_getcsv($content[$i], $delimiter, '"');
-            $record = $data_aux[0];
-            $data = REDCap::getData($project_id,'array',$record,$record_id_name);
-            if($data && strpos($checked_records,$record) === false && $record != "") {
-                $checked_records .= $record . ", ";
-            }else if($record == ""){
-                $checked_records_errors .= ($i+1). ", ";
+            $import_cancel_check = $this->getProjectSetting('import-cancel-check', $project_id)[$id];
+            if($import_cancel_check){
+                $this->log("Checking cancelled <span class='fa fa-ban  fa-fw'></span>");
+                $this->resetValues($project_id, $edoc);
+                return "2";
+            }else{
+                $data_aux = str_getcsv($content[$i], $delimiter, '"');
+                $record = $data_aux[0];
+                $data = REDCap::getData($project_id,'array',$record,$record_id_name);
+                if($data && strpos($checked_records,$record) === false && $record != "") {
+                    $checked_records .= $record . ", ";
+                }else if($record == ""){
+                    $checked_records_errors .= ($i+1). ", ";
+                }
             }
+
         }
         $checked_records_errors = rtrim($checked_records_errors, ", ");
         $checked_records = rtrim($checked_records, ", ");
@@ -183,7 +193,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 REDCap::email($import_email, 'noreply@vumc.org', $subject, $email_text);
 
             }
-            return true;
+            return "1";
         }else{
             $import_continue = $this->getProjectSetting('import-continue', $project_id);
             $import_continue[$id] = true;
@@ -198,7 +208,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $this->setProjectSetting('import', $import,$project_id);
         }
 
-        return false;
+        return "0";
 
     }
 
@@ -455,6 +465,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_list = empty($this->getProjectSetting('import'))?array():$this->getProjectSetting('import');
         $import_number = $this->getProjectSetting('import-number',$project_id);
         $import_cancel = $this->getProjectSetting('import-cancel',$project_id);
+        $import_cancel_check = $this->getProjectSetting('import-cancel-check',$project_id);
         $import_delimiter = $this->getProjectSetting('import-delimiter');
         $import_datetime = $this->getProjectSetting('import-overwrite');
         $import_overwrite = $this->getProjectSetting('import-datetime');
@@ -467,6 +478,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             unset($import_list[$key]);
             unset($import_number[$key]);
             unset($import_cancel[$key]);
+            unset($import_cancel_check[$key]);
             unset($import_delimiter[$key]);
             unset($import_datetime[$key]);
             unset($import_overwrite[$key]);
@@ -478,6 +490,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $this->setProjectSetting('import', $import_list,$project_id);
         $this->setProjectSetting('import-number', $import_number,$project_id);
         $this->setProjectSetting('import-cancel', $import_cancel,$project_id);
+        $this->setProjectSetting('import-cancel-check', $import_cancel_check,$project_id);
         $this->setProjectSetting('import-delimiter', $import_delimiter,$project_id);
         $this->setProjectSetting('import-datetime', $import_datetime,$project_id);
         $this->setProjectSetting('import-overwrite', $import_overwrite,$project_id);

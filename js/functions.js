@@ -185,7 +185,7 @@ function startImport(){
     $('#importFile').attr('disabled',true);
 
     if (($("#checked-files-div").children().length > 0 && $('#checked-files-div').first().text().trim() != "None")) {
-        $('#check_spinner').show();
+        $('#check_spinner[spin="0"]').show();
         $('#check_delete').hide();
     }else if($("#checked-files-div").children().length > 0){
         $('#check_spinner').hide();
@@ -193,7 +193,7 @@ function startImport(){
     }
 
     if($("#pending-files-div").children().length > 0 && $('#pending-files-div').first().text().trim() != "None"){
-        $('#pending_spinner').show();
+        $('#pending_spinner[spin="0"]').show();
         $('#pending_delete').hide();
     }else if($("#pending-files-div").children().length > 0){
         $('#pending_spinner').hide();
