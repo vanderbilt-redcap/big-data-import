@@ -130,7 +130,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
-        $path = EDOC_PATH.$stored_name;
+        $path = \Files::copyEdocToTemp($edoc);
         $content = file($path);
         $fieldNames = explode($delimiter, $content[0]);
         $str = preg_replace('/^[\pZ\p{Cc}\x{feff}]+|[\pZ\p{Cc}\x{feff}]+$/ux', '', $fieldNames[0]);
@@ -256,7 +256,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_email = $this->getProjectSetting('import-email', $project_id);
         $import_checked = $this->getProjectSetting('import-checked', $project_id)[$id];
 
-        $path = EDOC_PATH.$stored_name;
+        $path = \Files::copyEdocToTemp($edoc); 
         $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$delimiter);
         $content = file($path);
         $fieldNames = explode($delimiter, $content[0]);
