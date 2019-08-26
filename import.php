@@ -416,7 +416,7 @@ foreach ($edoc_list as $index => $edoc) {
         <tbody>
         <?php
         $results = $module->queryLogs("
-				select log_id, timestamp, message, import,delimiter, recordlist, details
+				select log_id, timestamp, message, import, batch, delimiter, recordlist, details
 				where project_id = '".$_GET['pid']."'
 				order by log_id desc
 				limit 2000
@@ -437,6 +437,7 @@ foreach ($edoc_list as $index => $edoc) {
                 $logId = $row['log_id'];
                 $details = $row['details'];
                 $import = $row['import'];
+                $batch = $row['batch'];
                 $delimiter = $row['delimiter'];
                 if($row['message'] != "Data" && $row['message'] != "DataUser") {
                     ?>
@@ -454,6 +455,9 @@ foreach ($edoc_list as $index => $edoc) {
                                 </script>
                             <?php }else  if (!empty($import)) { ?>
                                 <div>Import #<?= $import ?></div>
+                                <?php if (!empty($batch)) {?>
+                                <div><?= $batch ?></div>
+                                <?php } ?>
                                 <?php if (!empty($delimiter)) { ?>
                                     <div>Delimiter: <?= $delimiter ?></div>
                                 <?php } ?>

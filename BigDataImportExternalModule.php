@@ -74,8 +74,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 ]);
 
                 $import_email = $this->getProjectSetting('import-email', $localProjectId);
+                $import_from = ($this->getProjectSetting('import-from', $localProjectId)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $localProjectId);
                 if ($import_email != "") {
-                    REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' has failed.', "An exception occurred while importing.");
+                    REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' has failed.', "An exception occurred while importing.");
                 }
             }
         }
@@ -190,8 +191,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
 
             if ($import_email != "") {
-                REDCap::email($import_email, 'noreply@vumc.org', $subject, $email_text);
-
+                $import_from = ($this->getProjectSetting('import-from', $project_id)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $project_id);
+                REDCap::email($import_email, $import_from, $subject, $email_text);
             }
             return "1";
         }else{
@@ -305,6 +306,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
+            $batchTextImport = "Batch " . ($i + 1) . " of " . $batchSize;
             $data = array();
             $numrecords = 0;
             for ($line = 1; $line <= $chunks; $line++) {
@@ -373,7 +375,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $this->log("Import #$import_number $message $batchText $icon", [
                 'details' => $details,
                 'recordlist' => rtrim($import_records, ", "),
-                'import' => $import_number
+                'import' => $import_number,
+                'batch' => $batchTextImport
             ]);
 
             if ($stopEarly) {
@@ -381,7 +384,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.";
                 $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
                 if ($import_email != "") {
-                     REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' has failed', $email_text);
+                    $import_from = ($this->getProjectSetting('import-from', $project_id)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $project_id);
+                     REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' has failed', $email_text);
 
                 }
 
@@ -391,7 +395,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'status' => 1,
                     'edoc' => $edoc,
                     'checked' =>$import_checked,
-                    'import' => $import_number
+                    'import' => $import_number,
+                    'batch' => $batchTextImport
                 ]);
                 return "1";
             }
@@ -405,7 +410,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'status' => 2,
                     'edoc' => $edoc,
                     'checked' =>$import_checked,
-                    'import' => $import_number
+                    'import' => $import_number,
+                    'batch' => $batchTextImport
                 ]);
                 return "2";
             }
@@ -417,18 +423,21 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             'status' => 0,
             'edoc' => $edoc,
             'checked' =>$import_checked,
-            'import' => $import_number
+            'import' => $import_number,
+            'batch' => $batchTextImport
         ]);
         $this->resetValues($project_id, $edoc);
         if ($import_email != "") {
             $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.";
             $email_text .= "<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
-            REDCap::email($import_email, 'noreply@vumc.org', 'Import process #'.$import_number.' finished', $email_text);
+            $import_from = ($this->getProjectSetting('import-from', $project_id)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $project_id);
+            REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' finished', $email_text);
         }
         if(!empty($warnings)){
             $this->log("Import #$import_number finished with warnings <span class='fa fa-exclamation-circle warning fa-fw'></span>", [
                 'details' => $warnings,
-                'import' => $import_number
+                'import' => $import_number,
+                'batch' => $batchTextImport
             ]);
         }
         return "0";

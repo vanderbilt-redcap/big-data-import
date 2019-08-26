@@ -31,6 +31,11 @@
 			"key": "import-email",
 			"name": "List of emails, <b>separated by commas</b> <br/>to send the notification to once the import has finished",
 			"type": "textarea"
+		},
+		{
+			"key": "import-from",
+			"name": "Sender email (by default <b>noreply@vumc.org</b>)",
+			"type": "text"
 		}
 	],
 	"compatibility": {
