@@ -225,7 +225,7 @@ foreach ($edoc_list as $index => $edoc) {
             $docs = "";
             $count_file = 0;
             foreach ($edoc_list as $index => $edoc){
-                $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+                $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
                 $q = db_query($sql);
 
                 if ($error = db_error()) {
@@ -268,7 +268,7 @@ foreach ($edoc_list as $index => $edoc) {
                 $docs = "";
                 $count_file = 0;
                 foreach ($edoc_list as $index => $edoc){
-                    $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+                    $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
                     $q = db_query($sql);
 
                     if ($error = db_error()) {

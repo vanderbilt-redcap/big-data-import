@@ -101,7 +101,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     }
 
     function checkRecords($project_id,$edoc,$id,$import_number){
-        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
         $q = db_query($sql);
 
         if ($error = db_error()) {
@@ -181,7 +181,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $this->setProjectSetting('import-cancel', $import_cancel,$project_id);
 
 
-                $this->log("There are existing records in the project that match the excel file <span class='fa fa-times  fa-fw'></span>", [
+                $this->log("There are existing records in the project that match the csv file <span class='fa fa-times  fa-fw'></span>", [
                     'recordlist' => $checked_records
                 ]);
 
@@ -214,7 +214,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     }
 
     function importRecords($project_id,$edoc,$id,$import_number){
-        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
         $q = db_query($sql);
 
         if ($error = db_error()) {
@@ -286,12 +286,12 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $projectTitle = $row['app_title'];
         }
 
-       $sql = "SELECT b.event_id FROM  redcap_events_arms a LEFT JOIN redcap_events_metadata b ON(a.arm_id = b.arm_id) where a.project_id ='$project_id'";
+       $sql = "SELECT b.event_id FROM  redcap_events_arms a LEFT JOIN redcap_events_metadata b ON(a.arm_id = b.arm_id) where a.project_id ='".db_escape($project_id)."'";
         $q = db_query($sql);
         $repeatable = false;
         if (db_num_rows($q)) {
             while($row = db_fetch_assoc($q)) {
-                $sql2 = "SELECT * FROM redcap_events_repeat WHERE event_id='".$row['event_id']."'";
+                $sql2 = "SELECT * FROM redcap_events_repeat WHERE event_id='".db_escape($row['event_id'])."'";
                 $q2 = db_query($sql2);
                 $row2 = db_fetch_assoc($q2);
                 if (db_num_rows($q2)){
@@ -557,7 +557,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     }
 
     function getDocName($edoc){
-        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id=" . $edoc;
+        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
         $q = db_query($sql);
 
         if ($error = db_error()) {
