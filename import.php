@@ -183,7 +183,7 @@ foreach ($edoc_list as $index => $edoc) {
                     <input type="checkbox" id="checkExisting" name="checkExisting" style="width: 20px;height: 20px;vertical-align: -3px;" onclick="anyFilesWithChecks(document.getElementById('importFile'))" checked>
                 </div>
                 <div style="padding-bottom: 12px">
-                    <label style="padding-right: 30px;">Select to overwrite blank values on existing records:</label>
+                    <label style="padding-right: 30px;">Allow blank values to overwrite existing values:</label>
                     <input type="checkbox" id="checkOverwrite" name="checkOverwrite" style="width: 20px;height: 20px;vertical-align: -3px;"
                            onchange="
 									if (!this.checked) return;
