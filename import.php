@@ -183,6 +183,10 @@ foreach ($edoc_list as $index => $edoc) {
                     <input type="checkbox" id="checkExisting" name="checkExisting" style="width: 20px;height: 20px;vertical-align: -3px;" onclick="anyFilesWithChecks(document.getElementById('importFile'))" checked>
                 </div>
                 <div style="padding-bottom: 12px">
+                    <label style="padding-right: 30px;">Select to skip errors when importing:</label>
+                    <input type="checkbox" id="checkErrors" name="checkErrorsg" style="width: 20px;height: 20px;vertical-align: -3px;">
+                </div>
+                <div style="padding-bottom: 12px">
                     <label style="padding-right: 30px;">Allow blank values to overwrite existing values:</label>
                     <input type="checkbox" id="checkOverwrite" name="checkOverwrite" style="width: 20px;height: 20px;vertical-align: -3px;"
                            onchange="
@@ -322,7 +326,7 @@ foreach ($edoc_list as $index => $edoc) {
                     <tbody>
                         <?php
                         $results = $module->queryLogs("
-                            select log_id, timestamp, file, status, import, checked, totalrecordsIds, edoc 
+                            select log_id, timestamp, file, status, import, checked, totalrecordsIds, edoc  
                             where project_id = '".$_GET['pid']."' AND message='Data'
                             order by log_id desc
                             limit 5
@@ -367,6 +371,7 @@ foreach ($edoc_list as $index => $edoc) {
                                                        </div>';
                                     $index++;
                                 }
+
 
                                 $resultsUser = $module->queryLogs("
                                     select log_id, edoc, user 
@@ -416,7 +421,7 @@ foreach ($edoc_list as $index => $edoc) {
         <tbody>
         <?php
         $results = $module->queryLogs("
-				select log_id, timestamp, message, import, batch, delimiter, recordlist, details
+				select log_id, timestamp, message, import, batch, delimiter, recordlist, details, chkerrors 
 				where project_id = '".$_GET['pid']."'
 				order by log_id desc
 				limit 2000
@@ -439,6 +444,7 @@ foreach ($edoc_list as $index => $edoc) {
                 $import = $row['import'];
                 $batch = $row['batch'];
                 $delimiter = $row['delimiter'];
+                $chkerrors = $row['chkerrors'];
                 if($row['message'] != "Data" && $row['message'] != "DataUser") {
                     ?>
                     <tr>
@@ -460,6 +466,14 @@ foreach ($edoc_list as $index => $edoc) {
                                 <?php } ?>
                                 <?php if (!empty($delimiter)) { ?>
                                     <div>Delimiter: <?= $delimiter ?></div>
+                                <?php } ?>
+                                <?php if (!empty($chkerrors)) { ?>
+                                <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?= $logId ?>,<?= $import ?>)">
+                                    Show Details
+                                </button>
+                                <script>
+                                    ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($chkerrors)?>
+                                </script>
                                 <?php } ?>
                             <?php } ?>
                         </td>

@@ -64,6 +64,7 @@ function saveFilesIfTheyExist(url) {
         formData.append('checkExisting', $('#checkExisting').is(':checked'));
         formData.append('dateFormat', $('#dateFormat option:selected').val());
         formData.append('checkOverwrite', $('#checkOverwrite').is(':checked'));
+        formData.append('checkErrors', $('#checkErrors').is(':checked'));
     }
     if (lengthOfFiles > 0) {
         $.ajax({

@@ -250,6 +250,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $overwrite = "MDY";
         }
 
+        $chkerrors = $this->getProjectSetting('import-chkerrors',$project_id)[$id];
+
         $this->log("
         <div>Importing records from CSV file:</div>
         <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
@@ -303,6 +305,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $count = 0;
         $totalrecordsIds = "";
         $warnings = "";
+        $import_chkerrors_details =  "";
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
@@ -337,11 +340,11 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         $data[$record] = array();
                         $data[$record][$event_id] = $aux;
                     }
-                    if (strpos($import_records, $record) === false) {
+                    if (strpos($import_records, $record) === false && $record != '') {
                         $import_records .= $record . ", ";
                         $numrecords++;
                     }
-                    if (strpos($totalrecordsIds, $record) === false) {
+                    if (strpos($totalrecordsIds, $record) === false && $record != '') {
                         $totalrecordsIds .= $record . ", ";
                     }
                 }
@@ -357,10 +360,13 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $message .= 'successfully for';
                 } else {
                     $message .= 'with warnings for';
-                    if(strpos($warnings, $results['warnings']) === false){
+                    if (strpos($warnings, $results['warnings']) === false) {
                         $warnings .= $results['warnings'];
                     }
                 }
+            }else if(!empty($results['errors']) && $chkerrors){
+                $message = 'has <strong>errors</strong> for';
+                $stopEarly = true;
             } else {
                 $message = "did NOT complete successfully.<br> Errors in";
                 $stopEarly = true;
@@ -371,6 +377,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             if ($stopEarly) {
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
                 $details = json_encode($results, JSON_PRETTY_PRINT);
+                $import_chkerrors_details .= $details;
             }
             $this->log("Import #$import_number $message $batchText $icon", [
                 'details' => $details,
@@ -380,25 +387,27 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             ]);
 
             if ($stopEarly) {
-                $this->resetValues($project_id, $edoc);
-                $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.";
-                $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
-                if ($import_email != "") {
-                    $import_from = ($this->getProjectSetting('import-from', $project_id)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $project_id);
-                     REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' has failed', $email_text);
+                if(!$chkerrors){
+                    $this->resetValues($project_id, $edoc);
+                    $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>REDCap was unable to import some record data.";
+                    $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
+                    if ($import_email != "") {
+                        $import_from = ($this->getProjectSetting('import-from', $project_id)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $project_id);
+                        REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' has failed', $email_text);
 
+                    }
+
+                    $this->log("Data", [
+                        'file' => $doc_name,
+                        'totalrecordsIds' => rtrim($totalrecordsIds, ", "),
+                        'status' => 1,
+                        'edoc' => $edoc,
+                        'checked' =>$import_checked,
+                        'import' => $import_number,
+                        'batch' => $batchTextImport
+                    ]);
+                    return "1";
                 }
-
-                $this->log("Data", [
-                    'file' => $doc_name,
-                    'totalrecordsIds' => rtrim($totalrecordsIds, ", "),
-                    'status' => 1,
-                    'edoc' => $edoc,
-                    'checked' =>$import_checked,
-                    'import' => $import_number,
-                    'batch' => $batchTextImport
-                ]);
-                return "1";
             }
             $import_cancel = $this->getProjectSetting('import-cancel', $project_id)[$id];
             if($import_cancel){
@@ -424,7 +433,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             'edoc' => $edoc,
             'checked' =>$import_checked,
             'import' => $import_number,
-            'batch' => $batchTextImport
+            'batch' => $batchTextImport,
+            'chkerrors' => $import_chkerrors_details
         ]);
         $this->resetValues($project_id, $edoc);
         if ($import_email != "") {
@@ -471,7 +481,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     }
 
     function resetValues($project_id,$edoc){
-        $import_list = empty($this->getProjectSetting('import'))?array():$this->getProjectSetting('import');
+       $import_list = empty($this->getProjectSetting('import'))?array():$this->getProjectSetting('import');
         $import_number = $this->getProjectSetting('import-number',$project_id);
         $import_cancel = $this->getProjectSetting('import-cancel',$project_id);
         $import_cancel_check = $this->getProjectSetting('import-cancel-check',$project_id);
@@ -480,6 +490,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_overwrite = $this->getProjectSetting('import-datetime');
         $import_checked = $this->getProjectSetting('import-checked');
         $import_continue = $this->getProjectSetting('import-continue');
+        $import_chkerrors = $this->getProjectSetting('import-chkerrors');
         $import_check_started = $this->getProjectSetting('import-checked-started');
         $edoc_list = $this->getProjectSetting('edoc',$project_id);
         if (($key = array_search($edoc, $edoc_list)) !== false) {
@@ -493,6 +504,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             unset($import_overwrite[$key]);
             unset($import_checked[$key]);
             unset($import_continue[$key]);
+            unset($import_chkerrors[$key]);
             unset($import_check_started[$key]);
         }
         $this->setProjectSetting('edoc', $edoc_list,$project_id);
@@ -505,6 +517,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $this->setProjectSetting('import-overwrite', $import_overwrite,$project_id);
         $this->setProjectSetting('import-checked', $import_checked,$project_id);
         $this->setProjectSetting('import-continue', $import_continue,$project_id);
+        $this->setProjectSetting('import-chkerrors', $import_chkerrors,$project_id);
         $this->setProjectSetting('import-checked-started', $import_check_started,$project_id);
 
         if($edoc != "" && $project_id != ""){

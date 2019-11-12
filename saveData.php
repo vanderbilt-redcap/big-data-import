@@ -3,6 +3,10 @@ $import_checked = empty($module->getProjectSetting('import-checked'))?array():$m
 array_push($import_checked,filter_var($_REQUEST['checkExisting'], FILTER_VALIDATE_BOOLEAN));
 $module->setProjectSetting('import-checked', $import_checked);
 
+$import_chkerrors = empty($module->getProjectSetting('import-chkerrors'))?array():$module->getProjectSetting('import-chkerrors');
+array_push($import_chkerrors,filter_var($_REQUEST['checkErrors'], FILTER_VALIDATE_BOOLEAN));
+$module->setProjectSetting('import-chkerrors', $import_chkerrors);
+
 $start_import = true;
 $checked_log = "";
 if(filter_var($_REQUEST['checkExisting'], FILTER_VALIDATE_BOOLEAN)){
