@@ -184,7 +184,13 @@ foreach ($edoc_list as $index => $edoc) {
                 </div>
                 <div style="padding-bottom: 12px">
                     <label style="padding-right: 30px;">Select to skip errors when importing:</label>
-                    <input type="checkbox" id="checkErrors" name="checkErrorsg" style="width: 20px;height: 20px;vertical-align: -3px;">
+                    <input type="checkbox" id="checkErrors" name="checkErrorsg" style="width: 20px;height: 20px;vertical-align: -3px;"
+                           onchange="
+									if (!this.checked) return;
+									simpleDialog('Are you sure you wish to SKIP ERRORS WHEN IMPORTING from your uploaded CSV file? This means that an error occurs in a specific record, that record might save data or not depending on the batching.','ARE YOU SURE?',null,null,function(){
+										$('#checkErrors').prop('checked', false);
+									},'Cancel','','Yes, I understand');
+                               ">
                 </div>
                 <div style="padding-bottom: 12px">
                     <label style="padding-right: 30px;">Allow blank values to overwrite existing values:</label>
@@ -446,10 +452,20 @@ foreach ($edoc_list as $index => $edoc) {
                 $delimiter = $row['delimiter'];
                 $chkerrors = $row['chkerrors'];
                 if($row['message'] != "Data" && $row['message'] != "DataUser") {
+                    $message = $row['message'];
+//                    print_array($row);
+                    if (!empty($chkerrors) && $row['message'] == "Errors") {
+                        $message = '<a onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails('. $logId.','. $import .')" style="text-decoration: underline;color:#337ab7;cursor: pointer">
+                            See error report
+                        </a>
+                        <script>
+                            ExternalModules.Vanderbilt.BigDataImportExternalModule.details['.$logId.'] = '.json_encode($chkerrors).'
+                        </script>';
+                    } 
                     ?>
                     <tr>
                         <td><?= $row['timestamp'] ?></td>
-                        <td class="message"><?= $row['message'] ?></td>
+                        <td class="message"><?= $message ?></td>
                         <td style="width:100px"><?= $row['recordlist'] ?></td>
                         <td>
                             <?php if (!empty($details)) { ?>
@@ -466,14 +482,6 @@ foreach ($edoc_list as $index => $edoc) {
                                 <?php } ?>
                                 <?php if (!empty($delimiter)) { ?>
                                     <div>Delimiter: <?= $delimiter ?></div>
-                                <?php } ?>
-                                <?php if (!empty($chkerrors)) { ?>
-                                <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?= $logId ?>,<?= $import ?>)">
-                                    Show Details
-                                </button>
-                                <script>
-                                    ExternalModules.Vanderbilt.BigDataImportExternalModule.details[<?=$logId?>] = <?=json_encode($chkerrors)?>
-                                </script>
                                 <?php } ?>
                             <?php } ?>
                         </td>

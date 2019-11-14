@@ -353,6 +353,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $results = \Records::saveData($project_id, 'array', $data, $overwrite, $datetime, 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
             $results = $this->adjustSaveResults($results,$fieldNames);
             $stopEarly = false;
+            $icon = "";
             if (empty($results['errors'])) {
                 $message = "completed ";
 
@@ -366,18 +367,17 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 }
             }else if(!empty($results['errors']) && $chkerrors){
                 $message = 'has <strong>errors</strong> for';
-                $stopEarly = true;
+                $icon = "<span class='fa fa-times  fa-fw'></span>";
+                $import_chkerrors_details .= json_encode($results, JSON_PRETTY_PRINT);
             } else {
                 $message = "did NOT complete successfully.<br> Errors in";
                 $stopEarly = true;
             }
 
-            $icon = "";
             $details = "";
-            if ($stopEarly) {
+            if ($stopEarly ) {
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
                 $details = json_encode($results, JSON_PRETTY_PRINT);
-                $import_chkerrors_details .= $details;
             }
             $this->log("Import #$import_number $message $batchText $icon", [
                 'details' => $details,
@@ -433,9 +433,16 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             'edoc' => $edoc,
             'checked' =>$import_checked,
             'import' => $import_number,
-            'batch' => $batchTextImport,
-            'chkerrors' => $import_chkerrors_details
+            'batch' => $batchTextImport
         ]);
+
+        if($import_chkerrors_details != "" && $chkerrors){
+            $this->log("Errors", [
+                'import' => $import_number,
+                'chkerrors' => $import_chkerrors_details
+            ]);
+        }
+
         $this->resetValues($project_id, $edoc);
         if ($import_email != "") {
             $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.";
