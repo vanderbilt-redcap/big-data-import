@@ -183,7 +183,7 @@ foreach ($edoc_list as $index => $edoc) {
                     <input type="checkbox" id="checkExisting" name="checkExisting" style="width: 20px;height: 20px;vertical-align: -3px;" onclick="anyFilesWithChecks(document.getElementById('importFile'))" checked>
                 </div>
                 <div style="padding-bottom: 12px">
-                    <label style="padding-right: 30px;">Select to skip errors when importing:</label>
+                    <label style="padding-right: 30px;">Select to skip importing errors:</label>
                     <input type="checkbox" id="checkErrors" name="checkErrorsg" style="width: 20px;height: 20px;vertical-align: -3px;"
                            onchange="
 									if (!this.checked) return;
@@ -197,7 +197,7 @@ foreach ($edoc_list as $index => $edoc) {
                     <input type="checkbox" id="checkOverwrite" name="checkOverwrite" style="width: 20px;height: 20px;vertical-align: -3px;"
                            onchange="
 									if (!this.checked) return;
-									simpleDialog('Are you sure you wish to REPLACE EXISTING SAVED VALUES WITH BLANK VALUES (i.e., blank cells) from your uploaded CSV file? This means that any cell in the CSV file that is empty/blank (i.e., has no value) will overwrite an existing value for the given record (if the record already has a value for that field).','ARE YOU SURE?',null,null,function(){
+									simpleDialog('Are you sure you wish to SKIP IMPORTING ERRORS for this file? Please note skipping errors, may or  may not create a record depending on the import batching.','ARE YOU SURE?',null,null,function(){
 										$('#checkOverwrite').prop('checked', false);
 									},'Cancel','','Yes, I understand');
                                ">

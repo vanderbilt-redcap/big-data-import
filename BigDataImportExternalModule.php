@@ -368,7 +368,10 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }else if(!empty($results['errors']) && $chkerrors){
                 $message = 'has <strong>errors</strong> for';
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
-                $import_chkerrors_details .= json_encode($results, JSON_PRETTY_PRINT);
+                $error = "• Error on record ". json_encode($results['ids']). ": <br>".$results['errors']."<br>";
+                if (strpos($import_chkerrors_details, $error) === false) {
+                    $import_chkerrors_details .= $error;
+                }
             } else {
                 $message = "did NOT complete successfully.<br> Errors in";
                 $stopEarly = true;
