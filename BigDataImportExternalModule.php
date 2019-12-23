@@ -305,6 +305,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $count = 0;
         $totalrecordsIds = "";
         $warnings = "";
+        $warnings_errors = "";
         $import_chkerrors_details =  "";
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
@@ -361,8 +362,12 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $message .= 'successfully for';
                 } else {
                     $message .= 'with warnings for';
-                    if (strpos($warnings, $results['warnings']) === false) {
-                        $warnings .= $results['warnings'];
+                    $errormsg = ltrim($results['warnings'],"Array");
+                    if (strpos($warnings, $errormsg) === false) {
+                        $warnings .= $errormsg ;
+                    }
+                    if (strpos($warnings_errors, $import_records) === false) {
+                        $warnings_errors .= $import_records;
                     }
                 }
             }else if(!empty($results['errors']) && $chkerrors){
@@ -455,6 +460,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
         if(!empty($warnings)){
             $this->log("Import #$import_number finished with warnings <span class='fa fa-exclamation-circle warning fa-fw'></span>", [
+                'recordlist' => rtrim($warnings_errors,", "),
                 'details' => $warnings,
                 'import' => $import_number,
                 'batch' => $batchTextImport
