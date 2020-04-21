@@ -13,7 +13,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
     function cronbigdata(){
         $originalPid = $_GET['pid'];
-        error_log("cronbigdata - New cronbigdata() call");
+        error_log("cronbigdata - New cronbigdata() call\n");
         foreach($this->framework->getProjectsWithModuleEnabled() as $localProjectId){
             // This automatically associates all log statements with this project.
             $_GET['pid'] = $localProjectId;
@@ -26,24 +26,26 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $import_continue = $this->getProjectSetting('import-continue', $localProjectId)[$id];
                     $import_check_started = $this->getProjectSetting('import-checked-started', $localProjectId)[$id];
 
-                    error_log("cronbigdata - ".$import." && ".$edoc." != '' && ".$import_continue);
+                    error_log("cronbigdata - ".$import." && ".$edoc." != '' && ".$import_continue."\n");
                     if ($import && $edoc != "" && $import_continue) {
-                        error_log("cronbigdata - IF");
+                        error_log("cronbigdata - IF\n");
                         $import_started = $this->getProjectSetting('import', $localProjectId);
                         $import_started[$id] = false;
                         $this->setProjectSetting('import', $import_started,$localProjectId);
 
                         $error = $this->importRecords($localProjectId, $edoc,$id,$import_number);
                         if($error == "0"){
+                            error_log( "cronbigdata - FINISHED!\n");
                             $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
                             $this->log($logtext,['import' => $import_number]);
                         }else if($error == "1"){
+                            error_log( "cronbigdata - FINISHED with Errors!\n");
                             $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
                             $this->log($logtext,['import' => $import_number]);
                         }
 
                     }else if($import_checked && $edoc != "" && !$import_check_started){
-                        error_log("cronbigdata - ELSE");
+                        error_log("cronbigdata - ELSE\n");
                         $import_check_started_aux = $this->getProjectSetting('import-checked-started', $localProjectId);
                         $import_check_started_aux[$id] = true;
                         $this->setProjectSetting('import-checked-started', $import_check_started_aux,$localProjectId);
@@ -66,7 +68,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                             $import_after_check = $this->getProjectSetting('import', $localProjectId);
                             $import_after_check[$id] = true;
                             if($import_after_check){
-                                error_log( "cronbigdata - cronbigdata()");
+                                error_log( "cronbigdata - cronbigdata()\n");
                                 $this->cronbigdata();
                             }
                         }
