@@ -13,6 +13,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
     function cronbigdata(){
         $originalPid = $_GET['pid'];
+        error_log("New cronbigdata() call");
         foreach($this->framework->getProjectsWithModuleEnabled() as $localProjectId){
             // This automatically associates all log statements with this project.
             $_GET['pid'] = $localProjectId;
@@ -24,7 +25,10 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $import_number = $this->getProjectSetting('import-number', $localProjectId)[$id];
                     $import_continue = $this->getProjectSetting('import-continue', $localProjectId)[$id];
                     $import_check_started = $this->getProjectSetting('import-checked-started', $localProjectId)[$id];
+
+                    error_log($import." && ".$edoc." != '' && ".$import_continue);
                     if ($import && $edoc != "" && $import_continue) {
+                        error_log("IF");
                         $import_started = $this->getProjectSetting('import', $localProjectId);
                         $import_started[$id] = false;
                         $this->setProjectSetting('import', $import_started,$localProjectId);
@@ -39,6 +43,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         }
 
                     }else if($import_checked && $edoc != "" && !$import_check_started){
+                        error_log("ELSE");
                         $import_check_started_aux = $this->getProjectSetting('import-checked-started', $localProjectId);
                         $import_check_started_aux[$id] = true;
                         $this->setProjectSetting('import-checked-started', $import_check_started_aux,$localProjectId);
@@ -61,6 +66,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                             $import_after_check = $this->getProjectSetting('import', $localProjectId);
                             $import_after_check[$id] = true;
                             if($import_after_check){
+                                error_log( "cronbigdata()");
                                 $this->cronbigdata();
                             }
                         }
@@ -214,6 +220,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     }
 
     function importRecords($project_id,$edoc,$id,$import_number){
+        error_log("...importRecords");
         $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
         $q = db_query($sql);
 
