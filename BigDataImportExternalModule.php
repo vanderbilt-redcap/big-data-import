@@ -363,8 +363,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
             $count += $chunks;
             $results = \Records::saveData($project_id, 'array', $data, $overwrite, $datetime, 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
-            array_push($jsonresults,$results);
             $results = $this->adjustSaveResults($results,$fieldNames);
+            array_push($jsonresults,$results);
             $stopEarly = false;
             $icon = "";
             if (empty($results['errors'])) {
