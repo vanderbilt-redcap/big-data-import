@@ -43,8 +43,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                             error_log( "cronbigdata - FINISHED with Errors!");
                             $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
                             $this->log($logtext,['import' => $import_number]);
-                        }else{
-                            error_log( "cronbigdata - NOTHING");
                         }
 
                     }else if($import_checked && $edoc != "" && !$import_check_started){
@@ -319,6 +317,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $warnings = "";
         $warnings_errors = "";
         $import_chkerrors_details =  "";
+        $jsonresults = array();
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
@@ -364,6 +363,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
             $count += $chunks;
             $results = \Records::saveData($project_id, 'array', $data, $overwrite, $datetime, 'flat', '', true, true, true, false, true, array(), true, false, 1, false, '');
+            array_push($jsonresults,$results);
             $results = $this->adjustSaveResults($results,$fieldNames);
             $stopEarly = false;
             $icon = "";
@@ -445,6 +445,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 return "2";
             }
         }
+        error_log( "cronbigdata - JSON:".json_encode($jsonresults));
 
         $this->log("Data", [
             'file' => $doc_name,
