@@ -382,10 +382,15 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         $warnings_errors .= $import_records;
                     }
                 }
-            }else if(!empty($results['errors']) && $chkerrors && array_key_exists('ids',$results)){
+            }else if(!empty($results['errors'] || !array_key_exists('ids',$results)) && $chkerrors){
                 $message = 'has <strong>errors</strong> for';
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
-                $error = "• Error on record ". json_encode($results['ids']). ": <br>".$results['errors']."<br>";
+                if(!array_key_exists('ids',$results)){
+                    $error = "• Error on record ". json_encode($import_records). ": <br>".$results."<br>";
+                }else{
+                    $error = "• Error on record ". json_encode($results['ids']). ": <br>".$results['errors']."<br>";
+                }
+
                 if (strpos($import_chkerrors_details, $error) === false) {
                     $import_chkerrors_details .= $error;
                 }
