@@ -367,7 +367,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             array_push($jsonresults,$results);
             $stopEarly = false;
             $icon = "";
-            if (empty($results['errors'])) {
+            if (empty($results['errors']) && array_key_exists('ids',$results)) {
                 $message = "completed ";
 
                 if (empty($results['warnings'])) {
@@ -382,7 +382,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         $warnings_errors .= $import_records;
                     }
                 }
-            }else if(!empty($results['errors']) && $chkerrors){
+            }else if(!empty($results['errors']) && $chkerrors && array_key_exists('ids',$results)){
                 $message = 'has <strong>errors</strong> for';
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
                 $error = "• Error on record ". json_encode($results['ids']). ": <br>".$results['errors']."<br>";
