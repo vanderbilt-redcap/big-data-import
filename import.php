@@ -1,6 +1,6 @@
 <?php
 ignore_user_abort(true);
-set_time_limit(0);
+set_time_limit(60);
 
 $edoc_list = $module->getProjectSetting('edoc');
 $import_cancel = $module->getProjectSetting('import-cancel');
@@ -12,7 +12,7 @@ $import = $module->getProjectSetting('import');
 
 $disabled = '';
 foreach ($edoc_list as $index => $edoc) {
-    if (($import_checked[$index] && !$import_continue[$index] && $import_check_started[$index] && !$import_cancel[$index]) || (!$import[$index] && !$import_checked[$index]) || ($import_check_started[$index] && $import_checked[$index])) {
+    if (($import_checked[$index] && !$import_continue[$index] && $import_check_started[$index] && !$import_cancel[$index]) || (!$import[$index] && !$import_checked[$index]) || ($import_check_started[$index] && $import_checked[$index] && !$import_cancel_checked[$index])) {
         $disabled = 'disabled';
     }
 }

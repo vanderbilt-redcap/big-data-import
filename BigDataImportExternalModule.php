@@ -2,86 +2,153 @@
 namespace Vanderbilt\BigDataImportExternalModule;
 
 use Exception;
+use ExternalModules\ExternalModules;
 use REDCap;
 
 
 class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModule{
 
+    private $timeToEnd = false;
+
     public function __construct(){
         parent::__construct();
     }
 
+    function runBigDataCron() {
+        try {
+            $this->cronbigdata();
+        }
+        catch(\Exception $e) {
+            error_log("Big Data Exception: ".$e->getMessage());
+        }
+    }
+
     function cronbigdata(){
+        ## Check the current cron timeout window and don't run if it hasn't passed yet
+        $currentImportTimeout = $this->getSystemSetting("currentTimeout");
+        if($currentImportTimeout < time()) {
+            $this->timeToEnd = time() + 30;
+            $this->setSystemSetting("currentTimeout",$this->timeToEnd);
+        }
+        else {
+            error_log("Big Data: Previous cron not yet timed out");
+            return;
+        }
+
         $originalPid = $_GET['pid'];
-        foreach($this->framework->getProjectsWithModuleEnabled() as $localProjectId){
+        $enabledProjects = $this->framework->getProjectsWithModuleEnabled();
+        error_log("Big Data: ".var_export($enabledProjects,true));
+        foreach($enabledProjects as $thisProject) {
+            if($thisProject === NULL) {
+                ## This module has been enabled for all projects on this REDCap instance. Find new list
+                $enabledProjects = [];
+                $results = $this->query("
+                    select project_id
+                    from redcap_external_modules m
+                    join redcap_external_module_settings s
+                      on m.external_module_id = s.external_module_id
+                    where m.directory_prefix = '" . $this->PREFIX . "'
+                      and  s.`key` = 'edoc'
+                      AND s.value != '[]'
+                ");
+
+                while($row = $results->fetch_assoc()) {
+                    $enabledProjects[] = $row['project_id'];
+                }
+                error_log("Big Data: ".var_export($enabledProjects,true));
+                break;
+            }
+        }
+
+        foreach($enabledProjects as $localProjectId){
+            if($localProjectId === NULL) {
+                continue;
+            }
             // This automatically associates all log statements with this project.
             $_GET['pid'] = $localProjectId;
             try{
                 $import_list = $this->getProjectSetting('import', $localProjectId);
                 foreach ($import_list as $id=>$import){
+                    $import_cancel = $this->getProjectSetting('import-cancel', $localProjectId)[$id];
+                    $import_cancel_check = $this->getProjectSetting('import-cancel-check', $localProjectId)[$id];
                     $edoc = $this->getProjectSetting('edoc', $localProjectId)[$id];
                     $import_checked = $this->getProjectSetting('import-checked', $localProjectId)[$id];
                     $import_number = $this->getProjectSetting('import-number', $localProjectId)[$id];
                     $import_continue = $this->getProjectSetting('import-continue', $localProjectId)[$id];
                     $import_check_started = $this->getProjectSetting('import-checked-started', $localProjectId)[$id];
 
+                    $import = ($import && !$import_cancel);
+                    $import_checked = ($import_checked && !$import_cancel_check);
+
                     if ($import && $edoc != "" && $import_continue) {
-                        $import_started = $this->getProjectSetting('import', $localProjectId);
-                        $import_started[$id] = false;
-                        $this->setProjectSetting('import', $import_started,$localProjectId);
-
-                        $error = $this->importRecords($localProjectId, $edoc,$id,$import_number);
-                        if($error == "0"){
-                            $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
-                            $this->log($logtext,['import' => $import_number]);
-                        }else if($error == "1"){
-                            $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
-                            $this->log($logtext,['import' => $import_number]);
-                        }
-
-                    }else if($import_checked && $edoc != "" && !$import_check_started){
+                        $this->importDataFromEdocForProject($localProjectId,$edoc,$id);
+                    }
+                    else if($import_checked && $edoc != "" && !$import && !$import_cancel){
                         $import_check_started_aux = $this->getProjectSetting('import-checked-started', $localProjectId);
                         $import_check_started_aux[$id] = true;
                         $this->setProjectSetting('import-checked-started', $import_check_started_aux,$localProjectId);
 
-                        $import_cancel = $this->getProjectSetting('import-cancel', $localProjectId);
-                        $import_cancel[$id] = true;
-                        $this->setProjectSetting('import-cancel', $import_cancel,$localProjectId);
+//                        $import_cancel = $this->getProjectSetting('import-cancel', $localProjectId);
+//                        $import_cancel[$id] = true;
+//                        $this->setProjectSetting('import-cancel', $import_cancel,$localProjectId);
 
                         $error = $this->checkRecords($localProjectId, $edoc,$id,$import_number);
 
                         if($error == "0"){
                             $logtext = "<div>Checking process finished <span class='fa fa-check fa-fw'></span></div>";
-                            $this->log($logtext,['import' => $import_number]);
+                            $this->log($logtext,['import' => $import_number,'project_id' => $localProjectId]);
                         }else if($error == "1"){
                             $logtext = "<div>Checking process finished with issues <span class='fa fa-exclamation-circle fa-fw'></span></div>";
-                            $this->log($logtext,['import' => $import_number]);
+                            $this->log($logtext,['import' => $import_number,'project_id' => $localProjectId]);
                         }
 
                         if(!$error){
                             $import_after_check = $this->getProjectSetting('import', $localProjectId);
                             $import_after_check[$id] = true;
-                            if($import_after_check){
-                                $this->cronbigdata();
-                            }
+                            $this->setProjectSetting('import', $import_after_check, $localProjectId);
+
+                            $this->importDataFromEdocForProject($localProjectId,$edoc,$id);
                         }
                     }
                 }
             }
             catch(Exception $e){
-                $this->log("An error occurred.  Click 'Show Details' for more info.", [
-                    'details' => $e->getMessage() . "\n" . $e->getTraceAsString(),
-                    'import' => $import_number
-                ]);
+                if($e->getCode() == 60) {
+                    ## Import cron has timed out, throw back up to cron handler
+                    throw $e;
+                }
+                else {
+                    $this->log("An error occurred.  Click 'Show Details' for more info.", [
+                        'details' => $e->getMessage() . "\n" . $e->getTraceAsString(),
+                        'import' => $import_number,
+                        'project_id' => $localProjectId
+                    ]);
 
-                $import_email = $this->getProjectSetting('import-email', $localProjectId);
-                $import_from = ($this->getProjectSetting('import-from', $localProjectId)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $localProjectId);
-                if ($import_email != "") {
-                    REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' has failed.', "An exception occurred while importing.");
+                    $import_email = $this->getProjectSetting('import-email', $localProjectId);
+                    $import_from = ($this->getProjectSetting('import-from', $localProjectId)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $localProjectId);
+                    if ($import_email != "") {
+                        REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' has failed.', "An exception occurred while importing.");
+                    }
                 }
             }
         }
         $_GET['pid'] = $originalPid;
+    }
+
+    function importDataFromEdocForProject($projectId,$edocId,$key) {
+        error_log("Big Data: Ready to import $key");
+        $error = $this->importRecords($projectId, $edocId, $key);
+
+        $import_list[$key] = false;
+        $this->setProjectSetting('import', $import_list,$projectId);
+
+        if($error == "0"){
+            $logtext = "<div>Import process finished <span class='fa fa-check fa-fw'></span></div>";
+            $this->log($logtext,['import' => $key,'project_id' => $projectId]);
+        }else if($error == "1"){
+            $logtext = "<div>Import process finished with errors <span class='fa fa-exclamation-circle fa-fw'></span></div>";
+            $this->log($logtext,['import' => $key,'project_id' => $projectId]);
+        }
     }
 
     function hook_every_page_before_render($project_id = null){
@@ -118,6 +185,11 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
 
         $delimiter = $this->getProjectSetting('import-delimiter',$project_id)[$id];
+        $currentRow = $this->getProjectSetting('import-check-row',$project_id)[$id];
+        ## Assume that this must be a file that wasn't started, so start at beginning
+        if(!is_numeric($currentRow)) {
+            $currentRow = 1;
+        }
         $delimiter_text = $delimiter;
         if($delimiter == ""){
             $delimiter = ",";
@@ -128,7 +200,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $this->log("
         <div>Checking records from CSV file:</div>
-        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
+        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text,'project_id' => $project_id]);
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
@@ -140,10 +212,10 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $checked_records = "";
         $checked_records_errors = "";
-        for ($i = 1; $i < count($content); $i++) {
+        for ($i = $currentRow; $i < count($content); $i++) {
             $import_cancel_check = $this->getProjectSetting('import-cancel-check', $project_id)[$id];
             if($import_cancel_check){
-                $this->log("Checking cancelled <span class='fa fa-ban  fa-fw'></span>");
+                $this->log("Checking cancelled <span class='fa fa-ban  fa-fw'></span>",['project_id' => $project_id]);
                 $this->resetValues($project_id, $edoc);
                 return "2";
             }else{
@@ -157,6 +229,14 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 }
             }
 
+            ## TODO, also need to log current errors for future review?
+            if(($i % 10) == 0) {
+                ## Save the current row for future checks
+                $currentRowSetting = $this->getProjectSetting('import-check-row', $project_id);
+                $currentRowSetting[$id] = $i;
+                $this->setProjectSetting('import-check-row', $currentRowSetting, $project_id);
+                $this->checkShutdown();
+            }
         }
         $checked_records_errors = rtrim($checked_records_errors, ", ");
         $checked_records = rtrim($checked_records, ", ");
@@ -170,7 +250,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             if($checked_records_errors != ""){
                 $this->resetValues($project_id, $edoc);
                 $this->log("There are blank records in the file! <span class='fa fa-times  fa-fw'></span>", [
-                    'recordlist' => "Line: ".$checked_records_errors
+                    'recordlist' => "Line: ".$checked_records_errors,
+                    'project_id' => $project_id
                 ]);
 
                 $email_text = "Your checking process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>There are blank records in the project. Please upload the file again after fixing the error lines.";
@@ -183,7 +264,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
 
                 $this->log("There are existing records in the project that match the csv file <span class='fa fa-times  fa-fw'></span>", [
-                    'recordlist' => $checked_records
+                    'recordlist' => $checked_records,
+                    'project_id' => $project_id
                 ]);
 
                 $email_text = "Your checking process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.<br/>There are existing records in the project.";
@@ -214,7 +296,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
     }
 
-    function importRecords($project_id,$edoc,$id,$import_number){
+    function importRecords($project_id,$edoc,$id){
         $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
         $q = db_query($sql);
 
@@ -252,10 +334,15 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
 
         $chkerrors = $this->getProjectSetting('import-chkerrors',$project_id)[$id];
+        $currentRow = $this->getProjectSetting('import-current-row',$project_id)[$id];
+        ## Assume that this must be a file that wasn't started, so start at beginning
+        if(!is_numeric($currentRow)) {
+            $currentRow = 0;
+        }
 
         $this->log("
-        <div>Importing records from CSV file:</div>
-        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
+        <div>Importing records from CSV file - Starting at $currentRow:</div>
+        <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $id, 'delimiter' => $delimiter_text,'project_id' => $project_id]);
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
         $import_checked = $this->getProjectSetting('import-checked', $project_id)[$id];
@@ -303,13 +390,17 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 }
             }
         }
-        $count = 0;
         $totalrecordsIds = "";
         $warnings = "";
         $warnings_errors = "";
         $import_chkerrors_details =  "";
         $jsonresults = array();
-        for ($i = 0; $i < $batchSize; $i++) {
+
+        ## Scroll to start of current batch
+        $count = $chunks * $currentRow;
+
+        error_log("Big Data: Starting on batch $currentRow");
+        for ($i = $currentRow; $i < $batchSize; $i++) {
             $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
             $batchTextImport = "Batch " . ($i + 1) . " of " . $batchSize;
@@ -394,11 +485,12 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 $icon = "<span class='fa fa-times  fa-fw'></span>";
                 $details = json_encode($results, JSON_PRETTY_PRINT);
             }
-            $this->log("Import #$import_number $message $batchText $icon", [
+            $this->log("Import #$id $message $batchText $icon", [
                 'details' => $details,
                 'recordlist' => rtrim($import_records, ", "),
-                'import' => $import_number,
-                'batch' => $batchTextImport
+                'import' => $id,
+                'batch' => $batchTextImport,
+                'project_id' => $project_id
             ]);
 
             if ($stopEarly) {
@@ -408,7 +500,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     $email_text .="<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
                     if ($import_email != "") {
                         $import_from = ($this->getProjectSetting('import-from', $project_id)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $project_id);
-                        REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' has failed', $email_text);
+                        REDCap::email($import_email, $import_from, 'Import process #'.$id.' has failed', $email_text);
 
                     }
 
@@ -418,7 +510,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         'status' => 1,
                         'edoc' => $edoc,
                         'checked' =>$import_checked,
-                        'import' => $import_number,
+                        'import' => $id,
                         'batch' => $batchTextImport
                     ]);
                     return "1";
@@ -426,7 +518,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             }
             $import_cancel = $this->getProjectSetting('import-cancel', $project_id)[$id];
             if($import_cancel){
-                $this->log("Import #$import_number cancelled <span class='fa fa-ban  fa-fw'></span>", ['import' => $import_number]);
+                $this->log("Import #$id cancelled <span class='fa fa-ban  fa-fw'></span>", ['import' => $id,'project_id' => $project_id]);
                 $this->resetValues($project_id, $edoc);
                 $this->log("Data", [
                     'file' => $doc_name,
@@ -434,11 +526,18 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'status' => 2,
                     'edoc' => $edoc,
                     'checked' =>$import_checked,
-                    'import' => $import_number,
-                    'batch' => $batchTextImport
+                    'import' => $id,
+                    'batch' => $batchTextImport,
+                    'project_id' => $project_id
                 ]);
                 return "2";
             }
+
+            ## Save the current batch for future pulls
+            $currentRowSetting = $this->getProjectSetting('import-current-row', $project_id);
+            $currentRowSetting[$id] = $i;
+            $this->setProjectSetting('import-current-row', $currentRowSetting, $project_id);
+            $this->checkShutdown();
         }
 
         $this->log("Data", [
@@ -447,14 +546,16 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             'status' => 0,
             'edoc' => $edoc,
             'checked' =>$import_checked,
-            'import' => $import_number,
-            'batch' => $batchTextImport
+            'import' => $id,
+            'batch' => $batchTextImport,
+            'project_id' => $project_id
         ]);
 
         if($import_chkerrors_details != "" && $chkerrors){
             $this->log("Errors", [
-                'import' => $import_number,
-                'chkerrors' => $import_chkerrors_details
+                'import' => $id,
+                'chkerrors' => $import_chkerrors_details,
+                'project_id' => $project_id
             ]);
         }
 
@@ -463,14 +564,15 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $email_text = "Your import process on <b>".$projectTitle." [" . $project_id . "]</b> has finished.";
             $email_text .= "<br/><br/>For more information go to <a href='" . $this->getUrl('import.php') . "'>this page</a>";
             $import_from = ($this->getProjectSetting('import-from', $project_id)=="")?'noreply@vumc.org':$this->getProjectSetting('import-from', $project_id);
-            REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' finished', $email_text);
+            REDCap::email($import_email, $import_from, 'Import process #'.$id.' finished', $email_text);
         }
         if(!empty($warnings)){
-            $this->log("Import #$import_number finished with warnings <span class='fa fa-exclamation-circle warning fa-fw'></span>", [
+            $this->log("Import #$id finished with warnings <span class='fa fa-exclamation-circle warning fa-fw'></span>", [
                 'recordlist' => rtrim($warnings_errors,", "),
                 'details' => $warnings,
-                'import' => $import_number,
-                'batch' => $batchTextImport
+                'import' => $id,
+                'batch' => $batchTextImport,
+                'project_id' => $project_id
             ]);
         }
         return "0";
@@ -625,5 +727,20 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         fclose($h);
         unset($csv_headers, $row);
         return $data;
+    }
+
+    public function checkShutdown() {
+        $connectionStatus = connection_status();
+        $cronTimeout = ($this->timeToEnd && $this->timeToEnd < time());
+        if($connectionStatus == 2 || $connectionStatus == 3) {
+            error_log("App Engine Error: Timeout - Big Data Import");
+            echo "Process timed out<br />";
+            throw new \Exception("Import timed out",60);
+        }
+        if($cronTimeout) {
+            error_log("Big Data: Timeout - Big Data Import");
+            echo "Process timed out - Waiting for next cron pass<br />";
+            throw new \Exception("Import timed out",60);
+        }
     }
 }

@@ -1,6 +1,7 @@
 <?php
 $project_id = $_POST['pid'];
 
+/** @var \Vanderbilt\BigDataImportExternalModule\BigDataImportExternalModule $module */
 $import_cancel = $module->getProjectSetting('import-cancel', $project_id);
 $import_cancel_check = $module->getProjectSetting('import-cancel-check', $project_id);
 $import_check_started = $module->getProjectSetting('import-checked-started', $project_id);

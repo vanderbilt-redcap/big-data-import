@@ -38,6 +38,15 @@
 			"type": "text"
 		}
 	],
+	"crons": [
+		{
+			"cron_name": "big_data_cron",
+			"cron_description": "Regularly resumes import process",
+			"method": "runBigDataCron",
+			"cron_frequency": "60",
+			"cron_max_run_time": "59"
+		}
+	],
 	"compatibility": {
 		"php-version-min": "5.5.0",
 		"php-version-max": "",
