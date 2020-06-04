@@ -37,7 +37,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $originalPid = $_GET['pid'];
         $enabledProjects = $this->framework->getProjectsWithModuleEnabled();
-        error_log("Big Data: ".var_export($enabledProjects,true));
         foreach($enabledProjects as $thisProject) {
             if($thisProject === NULL) {
                 ## This module has been enabled for all projects on this REDCap instance. Find new list
@@ -55,7 +54,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 while($row = $results->fetch_assoc()) {
                     $enabledProjects[] = $row['project_id'];
                 }
-                error_log("Big Data: ".var_export($enabledProjects,true));
                 break;
             }
         }
