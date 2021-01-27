@@ -36,6 +36,16 @@
 			"key": "import-from",
 			"name": "Sender email (by default <b>noreply@vumc.org</b>)",
 			"type": "text"
+		},
+		{
+			"key": "reset-em-data",
+			"name": "<b>Reset module data</b> <i>Warning: This action cannot be undone. <br/>",
+			"type": "button",
+			"url":
+			{
+				"name": "Reset",
+				"value": "resetModuleData.php"
+			}
 		}
 	],
 	"compatibility": {
