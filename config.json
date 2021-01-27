@@ -39,7 +39,7 @@
 		},
 		{
 			"key": "reset-em-data",
-			"name": "<b>Reset module data</b> <i>Warning: This action cannot be undone. <br/>",
+			"name": "<b>Reset module data</b><br><i>Warning: This action cannot be undone",
 			"type": "button",
 			"url":
 			{

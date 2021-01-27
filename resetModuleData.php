@@ -11,6 +11,16 @@ unset($settings["version"]);
 unset($settings["import-email"]);
 unset($settings["import-from"]);
 
+$num = count($settings);
+
+if($num == 0) {
+    echo json_encode(array(
+        'status' => 'warning',
+        'message' => 'There is no module data yet to be reset.'
+    ));
+    exit();
+}
+
 # Remove project setting with specified key from current project
 foreach ($settings as $key => $value) {
     $module->removeProjectSetting($key);
@@ -21,10 +31,11 @@ $icon = '<span class="fa-stack fa-2x"><i class="fas fa-circle fa-stack-2x"></i><
 $logtext = "The module has been reset. {$icon}</div>";
 
 $module->log($logtext);
+$message = 'Reset was successful. '.$num.' rows have been reset.';
 
 echo json_encode(array(
     'status' => 'success',
-    'message' => $logtext
+    'message' => $message
 ));
 
 ?>
