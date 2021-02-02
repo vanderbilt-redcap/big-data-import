@@ -26,6 +26,9 @@
 .fa-times,.fa-exclamation-circle, .fa-ban{
     color: red;
 }
+
+.fa-stack { font-size: 0.5em; }
+
 .warning{
     color:#ffd24d !important;
 }
