@@ -248,7 +248,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $datetime = $this->getProjectSetting('import-datetime',$project_id)[$id];
         if($datetime == ""){
-            $overwrite = "MDY";
+            $datetime = "MDY";
         }
 
         $chkerrors = $this->getProjectSetting('import-chkerrors',$project_id)[$id];
