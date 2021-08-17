@@ -9,6 +9,7 @@ $import_checked = $module->getProjectSetting('import-checked');
 $import_check_started = $module->getProjectSetting('import-checked-started');
 $import_continue = $module->getProjectSetting('import-continue');
 $import = $module->getProjectSetting('import');
+$project_id = (int)$_GET['pid'];
 
 $disabled = '';
 foreach ($edoc_list as $index => $edoc) {
@@ -26,7 +27,7 @@ foreach ($edoc_list as $index => $edoc) {
     var startImport_url = <?=json_encode($module->getUrl('startImport.php'))?>;
     var continueImport_url = <?=json_encode($module->getUrl('continueImport.php'))?>;
     var anyFilesWithChecks_url = <?=json_encode($module->getUrl('anyFilesWithChecks.php'))?>;
-    var pid = <?=json_encode($_GET['pid'])?>;
+    var pid = <?=$project_id?>;
     $(document).ready(function() {
         $('.big-data-import-table').DataTable({
             ordering: false,
@@ -333,7 +334,7 @@ foreach ($edoc_list as $index => $edoc) {
                         <?php
                         $results = $module->queryLogs("
                             select log_id, timestamp, file, status, import, checked, totalrecordsIds, edoc  
-                            where project_id = '".$_GET['pid']."' AND message='Data'
+                            where project_id = '".$project_id."' AND message='Data'
                             order by log_id desc
                             limit 5
                         ");
@@ -381,7 +382,7 @@ foreach ($edoc_list as $index => $edoc) {
 
                                 $resultsUser = $module->queryLogs("
                                     select log_id, edoc, user 
-                                    where project_id = '".$_GET['pid']."' AND message='DataUser' AND edoc='".$row['edoc']."'
+                                    where project_id = '".$project_id."' AND message='DataUser' AND edoc='".$row['edoc']."'
                                     order by log_id desc
                                 ");
                                 $user = "";
@@ -428,7 +429,7 @@ foreach ($edoc_list as $index => $edoc) {
         <?php
         $results = $module->queryLogs("
 				select log_id, timestamp, message, import, batch, delimiter, recordlist, details, chkerrors 
-				where project_id = '".$_GET['pid']."'
+				where project_id = '".$project_id."'
 				order by log_id desc
 				limit 2000
 			");
