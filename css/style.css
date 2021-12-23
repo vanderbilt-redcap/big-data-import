@@ -33,7 +33,7 @@
     color:#ffd24d !important;
 }
 .dataTables_wrapperm,#big-data-module-wrapper{
-    max-width: 800px;
+    max-width: 900px;
 }
 .odd, tr .odd{
     background-color: rgba(0,0,0,.05) !important;
@@ -44,7 +44,7 @@
     border-top: 1px solid #dee2e6;
 }
 .big-data-import-table{
-    width: 800px !important;
+    width: 900px !important;
 }
 .big-data-import-table .odd{
     background-color: rgba(0,0,0,.05) !important;

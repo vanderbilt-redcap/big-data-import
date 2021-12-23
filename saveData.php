@@ -7,6 +7,10 @@ $import_chkerrors = empty($module->getProjectSetting('import-chkerrors'))?array(
 array_push($import_chkerrors,filter_var($_REQUEST['checkErrors'], FILTER_VALIDATE_BOOLEAN));
 $module->setProjectSetting('import-chkerrors', $import_chkerrors);
 
+$import_check_new_records = empty($module->getProjectSetting('import-check-new-records'))?array():$module->getProjectSetting('import-check-new-records');
+array_push($import_check_new_records,filter_var($_REQUEST['checkNewRecords'], FILTER_VALIDATE_BOOLEAN));
+$module->setProjectSetting('import-check-new-records', $import_check_new_records);
+
 $start_import = true;
 $checked_log = "";
 if(filter_var($_REQUEST['checkExisting'], FILTER_VALIDATE_BOOLEAN)){

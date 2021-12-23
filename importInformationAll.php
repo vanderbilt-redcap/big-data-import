@@ -175,7 +175,7 @@ $docname = "BigDataImport_".date("Y-m-d H:s");
                 <tbody>
                 <?php
                 $results = $module->queryLogs("
-                            select log_id, timestamp, file, status, import, checked, totalrecordsIds, edoc 
+                            select log_id, timestamp, file, status, import, checked, totalrecordsIds, newrecords, edoc 
                             where project_id = '".$_GET['pid']."' AND message='Data'
                             order by log_id desc
                         ");
@@ -217,6 +217,9 @@ $docname = "BigDataImport_".date("Y-m-d H:s");
                         if($row['checked'] == "1"){
                             $checked = "Yes";
                         }
+                        if($row['newrecords'] == "1"){
+                            $checked .= ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-title="More Information" data-content="Save only new records activated"><i class="fa fa-plus-circle fa-fw"></i>';
+                        }
 
                         if($row['totalrecordsIds'] != ""){
                             $records = count(explode(",",$row['totalrecordsIds']));
@@ -225,6 +228,8 @@ $docname = "BigDataImport_".date("Y-m-d H:s");
                                                             <p>'.$row['totalrecordsIds'].'</p>
                                                        </div>';
                             $index++;
+                        }else{
+                            $total = "<em>No records found</em>";
                         }
 
                         $resultsUser = $module->queryLogs("

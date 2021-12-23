@@ -65,6 +65,7 @@ function saveFilesIfTheyExist(url) {
         formData.append('dateFormat', $('#dateFormat option:selected').val());
         formData.append('checkOverwrite', $('#checkOverwrite').is(':checked'));
         formData.append('checkErrors', $('#checkErrors').is(':checked'));
+        formData.append('checkNewRecords', $('#checkNewRecords').is(':checked'));
     }
     if (lengthOfFiles > 0) {
         $.ajax({
@@ -200,6 +201,8 @@ function startImport(){
         $('#pending_spinner').hide();
         $('#pending_delete').show();
     }
+
+    $('#importStarted').show();
 
     $.ajax({
         url: startImport_url,

@@ -252,13 +252,18 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
 
         $chkerrors = $this->getProjectSetting('import-chkerrors',$project_id)[$id];
+        $import_email = $this->getProjectSetting('import-email', $project_id);
+        $import_checked = $this->getProjectSetting('import-checked', $project_id)[$id];
+
+        $import_check_new_records = $this->getProjectSetting('import-check-new-records',$project_id)[$id];
+        $allRecords = "";
+        if($import_check_new_records){
+            $allRecords = REDCap::getData($project_id,'array',null,'record_id');
+        }
 
         $this->log("
         <div>Importing records from CSV file:</div>
         <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
-
-        $import_email = $this->getProjectSetting('import-email', $project_id);
-        $import_checked = $this->getProjectSetting('import-checked', $project_id)[$id];
 
         $path = EDOC_PATH.$stored_name;
         $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$delimiter);
@@ -268,6 +273,9 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $str = preg_replace('/^[\pZ\p{Cc}\x{feff}]+|[\pZ\p{Cc}\x{feff}]+$/ux', '', $name);
             $fieldNames[$idName] = $str;
         }
+
+        #MAX TIME ALLOWED FOR THE PROCESS TO RUN
+        $max_time = strtotime(date("Y-m-d H:i:s", strtotime('+3 hours')));
 
         // Use the number of fields times number of records as a metric to determine a reasonable chunk size.
         // The following calculation caused about 500MB of maximum memory usage when importing the TIN Database (pid 61715) on the Vanderbilt REDCap test server.
@@ -308,7 +316,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $warnings = "";
         $warnings_errors = "";
         $import_chkerrors_details =  "";
-        $jsonresults = array();
+        $time_exceeded = false;
         for ($i = 0; $i < $batchSize; $i++) {
             $import_records = "";
             $batchText = "batch " . ($i + 1) . " of " . $batchSize;
@@ -316,39 +324,45 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $data = array();
             $numrecords = 0;
             for ($line = 1; $line <= $chunks; $line++) {
+                if(strtotime(date("Y-m-d H:i:s")) >= $max_time) {
+                    $time_exceeded = true;
+                    break;
+                }
                 if(($count+$line) <= (count($content)-1)){
                     $data_aux = str_getcsv($content[($line + $count)], $delimiter, '"');
                     $aux = array();
                     $instrument = "";
                     $instance = "";
                     $record = $data_aux[0];
-                    foreach ($fieldNames as $index => $field) {
-                        if ($field == "redcap_repeat_instrument") {
-                            $instrument = $data_aux[$index];
-                        } else if ($field == "redcap_repeat_instance") {
-                            $instance = $data_aux[$index];
-                        } else if ($field == "redcap_event_name") {
-                            $event_id = $Proj->getEventIdUsingUniqueEventName($data_aux[$index]);
-                        } else {
-                            $aux[$field] = $data_aux[$index];
+                    if(!$import_check_new_records || ($import_check_new_records && !array_key_exists($record, $allRecords))) {
+                        foreach ($fieldNames as $index => $field) {
+                            if ($field == "redcap_repeat_instrument") {
+                                $instrument = $data_aux[$index];
+                            } else if ($field == "redcap_repeat_instance") {
+                                $instance = $data_aux[$index];
+                            } else if ($field == "redcap_event_name") {
+                                $event_id = $Proj->getEventIdUsingUniqueEventName($data_aux[$index]);
+                            } else {
+                                $aux[$field] = $data_aux[$index];
+                            }
                         }
-                    }
-                    if ($repeatable) {
-                        if ($instance != "") {
-                            $data[$record]['repeat_instances'][$event_id][$instrument][$instance] = $aux;
+                        if ($repeatable) {
+                            if ($instance != "") {
+                                $data[$record]['repeat_instances'][$event_id][$instrument][$instance] = $aux;
+                            } else {
+                                $data[$record][$event_id] = $aux;
+                            }
                         } else {
+                            $data[$record] = array();
                             $data[$record][$event_id] = $aux;
                         }
-                    } else {
-                        $data[$record] = array();
-                        $data[$record][$event_id] = $aux;
-                    }
-                    if (strpos($import_records, $record) === false && $record != '') {
-                        $import_records .= $record . ", ";
-                        $numrecords++;
-                    }
-                    if (strpos($totalrecordsIds, $record) === false && $record != '') {
-                        $totalrecordsIds .= $record . ", ";
+                        if (strpos($import_records, $record) === false && $record != '') {
+                            $import_records .= $record . ", ";
+                            $numrecords++;
+                        }
+                        if (strpos($totalrecordsIds, $record) === false && $record != '') {
+                            $totalrecordsIds .= $record . ", ";
+                        }
                     }
                 }
             }
@@ -357,7 +371,11 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $results = $this->adjustSaveResults($results,$fieldNames);
             $stopEarly = false;
             $icon = "";
-            if (empty($results['errors']) && array_key_exists('ids',$results)) {
+            #We add the log messages
+            if(strtotime(date("Y-m-d H:i:s")) >= $max_time) {
+                $message = "did NOT complete successfully.<br> Time limit exceeded for";
+                $time_exceeded = true;
+            }else if (empty($results['errors']) && array_key_exists('ids',$results)) {
                 $message = "completed ";
 
                 if (empty($results['warnings'])) {
@@ -418,6 +436,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         'status' => 1,
                         'edoc' => $edoc,
                         'checked' =>$import_checked,
+                        'newrecords' =>$import_check_new_records,
                         'import' => $import_number,
                         'batch' => $batchTextImport
                     ]);
@@ -425,7 +444,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 }
             }
             $import_cancel = $this->getProjectSetting('import-cancel', $project_id)[$id];
-            if($import_cancel){
+            if($import_cancel || $time_exceeded){
                 $this->log("Import #$import_number cancelled <span class='fa fa-ban  fa-fw'></span>", ['import' => $import_number]);
                 $this->resetValues($project_id, $edoc);
                 $this->log("Data", [
@@ -434,6 +453,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'status' => 2,
                     'edoc' => $edoc,
                     'checked' =>$import_checked,
+                    'newrecords' =>$import_check_new_records,
                     'import' => $import_number,
                     'batch' => $batchTextImport
                 ]);
@@ -447,6 +467,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             'status' => 0,
             'edoc' => $edoc,
             'checked' =>$import_checked,
+            'newrecords' =>$import_check_new_records,
             'import' => $import_number,
             'batch' => $batchTextImport
         ]);
@@ -514,6 +535,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $import_checked = $this->getProjectSetting('import-checked');
         $import_continue = $this->getProjectSetting('import-continue');
         $import_chkerrors = $this->getProjectSetting('import-chkerrors');
+        $import_check_new_records = $this->getProjectSetting('import-check-new-records');
         $import_check_started = $this->getProjectSetting('import-checked-started');
         $edoc_list = $this->getProjectSetting('edoc',$project_id);
         if (($key = array_search($edoc, $edoc_list)) !== false) {
@@ -528,6 +550,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             unset($import_checked[$key]);
             unset($import_continue[$key]);
             unset($import_chkerrors[$key]);
+            unset($import_check_new_records[$key]);
             unset($import_check_started[$key]);
         }
         $this->setProjectSetting('edoc', $edoc_list,$project_id);
@@ -541,6 +564,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $this->setProjectSetting('import-checked', $import_checked,$project_id);
         $this->setProjectSetting('import-continue', $import_continue,$project_id);
         $this->setProjectSetting('import-chkerrors', $import_chkerrors,$project_id);
+        $this->setProjectSetting('import-check-new-records', $import_check_new_records,$project_id);
         $this->setProjectSetting('import-checked-started', $import_check_started,$project_id);
 
         if($edoc != "" && $project_id != ""){

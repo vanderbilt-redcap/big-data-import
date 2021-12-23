@@ -94,11 +94,11 @@ foreach ($edoc_list as $index => $edoc) {
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close closeCustomModal" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title" id="myModalLabel">Delete Logs</h4>
+                    <h4 class="modal-title" id="myModalLabel">Delete History</h4>
                 </div>
                 <div class="modal-body">
-                    <div>Are you sure you want to delete the log?</div>
-                    <div>Doing this will erase all of the information in the Recent Log Entry table.</div>
+                    <div>Are you sure you want to delete the history?</div>
+                    <div>Doing this will erase all of the information in the Recent Log Entry table and the module settings.</div>
                 </div>
 
                 <div class="modal-footer">
@@ -194,6 +194,16 @@ foreach ($edoc_list as $index => $edoc) {
                                ">
                 </div>
                 <div style="padding-bottom: 12px">
+                    <label style="padding-right: 30px;">Select to import only new records:</label>
+                    <input type="checkbox" id="checkNewRecords" name="checkNewRecords" style="width: 20px;height: 20px;vertical-align: -3px;"
+                           onchange="
+									if (!this.checked) return;
+									simpleDialog('Are you sure you wish to IMPORT ONLY NEW RECORDS from your uploaded CSV file? This means that the process will only import new records and skip existing ones.','ARE YOU SURE?',null,null,function(){
+										$('#checkErrors').prop('checked', false);
+									},'Cancel','','Yes, I understand');
+                               ">
+                </div>
+                <div style="padding-bottom: 12px">
                     <label style="padding-right: 30px;">Allow blank values to overwrite existing values:</label>
                     <input type="checkbox" id="checkOverwrite" name="checkOverwrite" style="width: 20px;height: 20px;vertical-align: -3px;"
                            onchange="
@@ -264,49 +274,52 @@ foreach ($edoc_list as $index => $edoc) {
             }
 
             if($docs != ""){
-                echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;max-width: 800px;padding-bottom: 25px;'>".$docs."</div>";
+                echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;padding-bottom: 25px;'>".$docs."</div>";
             }else{
-                echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;max-width: 800px;'><div><i>None</i></div>";
+                echo "<div class='alert alert-warning' id='checked-files-div' style='border:1px solid #ffeeba !important;'><div><i>None</i></div>";
             }
             echo "";
             ?>
         </div>
         <div>
-                <div class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
+            <div class="pendingFile"><span class="fa fa-clock fa-fw"></span> Pending files:</div>
 
-                <div class='alert alert-primary' style='border:1px solid #b8daff !important;max-width: 800px' id="pending-files-div">
-                <?php
-                $docs = "";
-                $count_file = 0;
-                foreach ($edoc_list as $index => $edoc){
-                    $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
-                    $q = db_query($sql);
+            <div class='alert alert-primary' style='border:1px solid #b8daff !important;' id="pending-files-div">
+            <?php
+            $importingFiles = false;
+            $docs = "";
+            $count_file = 0;
+            foreach ($edoc_list as $index => $edoc){
+                $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
+                $q = db_query($sql);
 
-                    if ($error = db_error()) {
-                        die($sql . ': ' . $error);
-                    }
-                    while ($row = db_fetch_assoc($q)) {
-                        if((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) {
-                            $count_file++;
-                            $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle' id='pending_delete'></span></a>";
-                            if(!$import[$index]){
-                                $delete = " <span class='fa fa-fw fa-spinner fa-spin' spin='".$index."'></span>";
-                            }else{
-                                $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='pending_spinner' spin='".$index."'></span>";
-                            }
-                            $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."</div>";
+                if ($error = db_error()) {
+                    die($sql . ': ' . $error);
+                }
+                while ($row = db_fetch_assoc($q)) {
+                    if((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) {
+                        $count_file++;
+                        $delete = " <a onclick='deleteAndCancel(" . $edoc . ")'><span style='color: red;background-color: white;border-radius: 100%;cursor:pointer;' class='fa fa-times-circle' id='pending_delete'></span></a>";
+                        if(!$import[$index]){
+                            $delete = " <span class='fa fa-fw fa-spinner fa-spin' spin='".$index."'></span>";
+                            $importingFiles = true;
+                        }else{
+                            $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='pending_spinner' spin='".$index."'></span>";
+                            $importingFiles = true;
                         }
+                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."</div>";
                     }
                 }
+            }
 
-                if($docs != ""){
-                    echo $docs;
-                }else{
-                    echo "<div><i>None</i>";
-                }
-                echo "";
-                ?>
-                </div>
+            if($docs != ""){
+                echo $docs;
+            }else{
+                echo "<div><i>None</i>";
+            }
+            echo "";
+            ?>
+            </div>
         </div>
         <div style="padding-top: 20px">
            <div class="panel panel-default">
@@ -333,7 +346,7 @@ foreach ($edoc_list as $index => $edoc) {
                     <tbody>
                         <?php
                         $results = $module->queryLogs("
-                            select log_id, timestamp, file, status, import, checked, totalrecordsIds, edoc  
+                            select log_id, timestamp, file, status, import, checked, totalrecordsIds, newrecords,  edoc  
                             where project_id = '".$project_id."' AND message='Data'
                             order by log_id desc
                             limit 5
@@ -369,6 +382,9 @@ foreach ($edoc_list as $index => $edoc) {
                                 if($row['checked'] == "1"){
                                     $checked = "Yes";
                                 }
+                                if($row['newrecords'] == "1"){
+                                    $checked .= ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-title="More Information" data-content="Save only new records activated"><i class="fa fa-plus-circle fa-fw"></i>';
+                                }
 
                                 if($row['totalrecordsIds'] != ""){
                                     $records = count(explode(",",$row['totalrecordsIds']));
@@ -377,6 +393,8 @@ foreach ($edoc_list as $index => $edoc) {
                                                             <p>'.$row['totalrecordsIds'].'</p>
                                                        </div>';
                                     $index++;
+                                }else{
+                                    $total = "<em>No records found</em>";
                                 }
 
 
@@ -414,9 +432,14 @@ foreach ($edoc_list as $index => $edoc) {
     <br>
     <br>
     <br>
-    <h5 style="max-width: 800px;">Recent Log Entries <a onclick="cancelImport()" class="btn btn-cancel" style="float: right;"><span id="spinner"></span> Cancel Current Import</a></span> <span><a onclick="javascript:$('#deleteLogs').modal('show');" class="btn btn-error" style="float: right;margin-right: 10px;">Delete Logs</a></span></h5>
+    <?php if($importingFiles){ ?>
+        <div style="padding-bottom:20px" id="importStarted">
+            <div class='alert alert-secondary'><em class="fas fa-cog fa-spin"></em> Import in process. Uploads are disabled until the queue is complete.</div>
+        </div>
+    <?php } ?>
+    <h5>Recent Log Entries <a onclick="cancelImport()" class="btn btn-cancel" style="float: right;"><span id="spinner"></span> Cancel Current Import</a></span> <span><a onclick="javascript:$('#deleteLogs').modal('show');" class="btn btn-error" style="float: right;margin-right: 10px;">Delete History</a></span></h5>
     <p>(refresh the page to see the latest)</p>
-    <table class="table table-striped big-data-import-table" style="max-width: 1000px;">
+    <table class="table table-striped big-data-import-table">
         <thead>
         <tr>
             <th style="min-width: 160px;">Date/Time</th>
@@ -454,7 +477,6 @@ foreach ($edoc_list as $index => $edoc) {
                 $chkerrors = $row['chkerrors'];
                 if($row['message'] != "Data" && $row['message'] != "DataUser") {
                     $message = $row['message'];
-//                    print_array($row);
                     if (!empty($chkerrors) && $row['message'] == "Errors") {
                         $message = '<a onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails('. $logId.','. $import .')" style="text-decoration: underline;color:#337ab7;cursor: pointer">
                             See error report
