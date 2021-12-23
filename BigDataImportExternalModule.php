@@ -323,9 +323,13 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $batchTextImport = "Batch " . ($i + 1) . " of " . $batchSize;
             $data = array();
             $numrecords = 0;
+            $import_cancel = $this->getProjectSetting('import-cancel', $project_id)[$id];
             for ($line = 1; $line <= $chunks; $line++) {
                 if(strtotime(date("Y-m-d H:i:s")) >= $max_time) {
                     $time_exceeded = true;
+                    break;
+                }
+                if($import_cancel){
                     break;
                 }
                 if(($count+$line) <= (count($content)-1)){
@@ -443,7 +447,6 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     return "1";
                 }
             }
-            $import_cancel = $this->getProjectSetting('import-cancel', $project_id)[$id];
             if($import_cancel || $time_exceeded){
                 $this->log("Import #$import_number cancelled <span class='fa fa-ban  fa-fw'></span>", ['import' => $import_number]);
                 $this->resetValues($project_id, $edoc);
