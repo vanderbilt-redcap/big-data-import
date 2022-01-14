@@ -441,6 +441,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                         'edoc' => $edoc,
                         'checked' =>$import_checked,
                         'newrecords' =>$import_check_new_records,
+                        'skip' =>$chkerrors,
+                        'overwrite' =>$overwrite,
                         'import' => $import_number,
                         'batch' => $batchTextImport
                     ]);
@@ -457,6 +459,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                     'edoc' => $edoc,
                     'checked' =>$import_checked,
                     'newrecords' =>$import_check_new_records,
+                    'skip' =>$chkerrors,
+                    'overwrite' =>$overwrite,
                     'import' => $import_number,
                     'batch' => $batchTextImport
                 ]);
@@ -471,6 +475,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             'edoc' => $edoc,
             'checked' =>$import_checked,
             'newrecords' =>$import_check_new_records,
+            'skip' =>$chkerrors,
+            'overwrite' =>$overwrite,
             'import' => $import_number,
             'batch' => $batchTextImport
         ]);

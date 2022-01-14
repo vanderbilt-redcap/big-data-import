@@ -29,6 +29,8 @@ foreach ($edoc_list as $index => $edoc) {
     var anyFilesWithChecks_url = <?=json_encode($module->getUrl('anyFilesWithChecks.php'))?>;
     var pid = <?=$project_id?>;
     $(document).ready(function() {
+        $('[data-toggle="tooltip"]').tooltip();
+
         $('.big-data-import-table').DataTable({
             ordering: false,
             bFilter: false,
@@ -180,38 +182,20 @@ foreach ($edoc_list as $index => $edoc) {
                     </select>
                 </div>
                 <div style="padding-bottom: 12px">
-                    <label style="padding-right: 30px;">Select to check for existing records:</label>
+                    <label style="padding-right: 30px;"><span class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" style="cursor: pointer;color:#ccc" title="When selected, the module will check if the file contains existing records in the project and provide a list of existing record IDs. You can only check one file at a time. if not selected and records in the file are already on the project the data on the project will be overwritten."></span> Check for existing records</label>
                     <input type="checkbox" id="checkExisting" name="checkExisting" style="width: 20px;height: 20px;vertical-align: -3px;" onclick="anyFilesWithChecks(document.getElementById('importFile'))" checked>
                 </div>
                 <div style="padding-bottom: 12px">
-                    <label style="padding-right: 30px;">Select to skip importing errors:</label>
-                    <input type="checkbox" id="checkErrors" name="checkErrorsg" style="width: 20px;height: 20px;vertical-align: -3px;"
-                           onchange="
-									if (!this.checked) return;
-									simpleDialog('Are you sure you wish to SKIP ERRORS WHEN IMPORTING from your uploaded CSV file? This means that an error occurs in a specific record, that record might save data or not depending on the batching.','ARE YOU SURE?',null,null,function(){
-										$('#checkErrors').prop('checked', false);
-									},'Cancel','','Yes, I understand');
-                               ">
+                    <label style="padding-right: 30px;"><span class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" style="cursor: pointer;color:#ccc" title="Continue importing even if errors are found when importing a file. Instead of halting the import, an error report link will appear if any errors are found and errors will also be displayed in the logs."></span> Skip importing errors</label>
+                    <input type="checkbox" id="checkErrors" name="checkErrors" style="width: 20px;height: 20px;vertical-align: -3px;">
                 </div>
                 <div style="padding-bottom: 12px">
-                    <label style="padding-right: 30px;">Select to import only new records:</label>
-                    <input type="checkbox" id="checkNewRecords" name="checkNewRecords" style="width: 20px;height: 20px;vertical-align: -3px;"
-                           onchange="
-									if (!this.checked) return;
-									simpleDialog('Are you sure you wish to IMPORT ONLY NEW RECORDS from your uploaded CSV file? This means that the process will only import new records and skip existing ones.','ARE YOU SURE?',null,null,function(){
-										$('#checkErrors').prop('checked', false);
-									},'Cancel','','Yes, I understand');
-                               ">
+                    <label style="padding-right: 30px;"><span class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" style="cursor: pointer;color:#ccc" title="The tool will skip importing any records in your file with record IDs that already exist in the REDCap project. Only records with new IDs will be added."></span> Import new records only</label>
+                    <input type="checkbox" id="checkNewRecords" name="checkNewRecords" style="width: 20px;height: 20px;vertical-align: -3px;">
                 </div>
                 <div style="padding-bottom: 12px">
-                    <label style="padding-right: 30px;">Allow blank values to overwrite existing values:</label>
-                    <input type="checkbox" id="checkOverwrite" name="checkOverwrite" style="width: 20px;height: 20px;vertical-align: -3px;"
-                           onchange="
-									if (!this.checked) return;
-									simpleDialog('Are you sure you wish to REPLACE EXISTING SAVED VALUES WITH BLANK VALUES (i.e., blank cells) from your uploaded CSV file? This means that any cell in the CSV file that is empty/blank (i.e., has no value) will overwrite an existing value for the given record (if the record already has a value for that field).','ARE YOU SURE?',null,null,function(){
-										$('#checkOverwrite').prop('checked', false);
-									},'Cancel','','Yes, I understand');
-                               ">
+                    <label style="padding-right: 30px;"><span class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" style="cursor: pointer;color:#ccc" title="This setting allows blank values in the import file to overwrite existing values in the REDCap project."></span> Allow blank values to overwrite existing values</label>
+                    <input type="checkbox" id="checkOverwrite" name="checkOverwrite" style="width: 20px;height: 20px;vertical-align: -3px;">
                 </div>
                 <div style="padding-bottom: 12px">
                     <label style="padding-right: 30px;">Set format for date and datetime values:</label>
@@ -339,14 +323,15 @@ foreach ($edoc_list as $index => $edoc) {
                         <th style="text-align: center">Uploaded By</th>
                         <th style="text-align: center">Records</th>
                         <th style="text-align: center">Status</th>
-                        <th style="text-align: center">Checked</th>
+                        <th style="text-align: center">Options</th>
                         <th style="text-align: center">Import #</th>
                     </tr>
                     </thead>
                     <tbody>
                         <?php
                         $results = $module->queryLogs("
-                            select log_id, timestamp, file, status, import, checked, totalrecordsIds, newrecords,  edoc  
+                            select log_id, timestamp, file, status, import, totalrecordsIds, edoc,
+                            checked, skip, overwrite, newrecords 
                             where project_id = '".$project_id."' AND message='Data'
                             order by log_id desc
                             limit 5
@@ -378,12 +363,24 @@ foreach ($edoc_list as $index => $edoc) {
                                     $status = "<span class='fa fa-ban fa-fw' title='cancelled'></span>";
                                 }
 
-                                $checked = "No";
+                                $options = "";
                                 if($row['checked'] == "1"){
-                                    $checked = "Yes";
+                                    $options .= "<li style='padding-right: 30px !important;'>Check for existing records</li>";
+                                }
+                                if($row['skip'] == "1"){
+                                    $options .= "<li style='padding-right: 30px !important;'>Skip importing errors</li>";
+                                }
+                                if($row['overwrite'] != "normal" && $row['overwrite'] != ""){
+                                    $options .= "<li style='padding-right: 30px !important;'>Allow blank values to overwrite existing values</li>";
                                 }
                                 if($row['newrecords'] == "1"){
-                                    $checked .= ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-title="More Information" data-content="Save only new records activated"><i class="fa fa-plus-circle fa-fw"></i>';
+                                    $options .= "<li style='padding-right: 30px !important;'>Import new records only</li>";
+                                }
+                                if($row['checked'] == "1" || $row['skip'] == "1" || ($row['overwrite'] != "normal" && $row['overwrite'] != "") || $row['newrecords'] == "1"){
+                                    $allOptions = "<ul>".$options."</ul>";
+                                    $checked = '<a tabindex="0" role="button" data-container="body" data-toggle="popover" data-title="Options" data-content="'.$allOptions.'"><i class="fa fa-plus-circle fa-fw"></i>';
+                                }else{
+                                    $checked = "<em>None</em>";
                                 }
 
                                 if($row['totalrecordsIds'] != ""){

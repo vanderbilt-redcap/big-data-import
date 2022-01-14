@@ -168,7 +168,7 @@ $docname = "BigDataImport_".date("Y-m-d H:s");
                     <th style="text-align: center">Records Imported</th>
                     <th style="text-align: center">Status</th>
                     <th style="text-align: center">Status text</th>
-                    <th style="text-align: center">Checked</th>
+                    <th style="text-align: center">Options</th>
                     <th style="text-align: center">Import #</th>
                 </tr>
                 </thead>
@@ -213,13 +213,26 @@ $docname = "BigDataImport_".date("Y-m-d H:s");
                             $status_text = "cancelled";
                         }
 
-                        $checked = "No";
+                        $options = "";
                         if($row['checked'] == "1"){
-                            $checked = "Yes";
+                            $options .= "<li style='padding-right: 30px !important;'>Check for existing records</li>";
+                        }
+                        if($row['skip'] == "1"){
+                            $options .= "<li style='padding-right: 30px !important;'>Skip importing errors</li>";
+                        }
+                        if($row['overwrite'] != "normal" && $row['overwrite'] != ""){
+                            $options .= "<li style='padding-right: 30px !important;'>Allow blank values to overwrite existing values</li>";
                         }
                         if($row['newrecords'] == "1"){
-                            $checked .= ' <a tabindex="0" role="button" data-container="body" data-toggle="popover" data-title="More Information" data-content="Save only new records activated"><i class="fa fa-plus-circle fa-fw"></i>';
+                            $options .= "<li style='padding-right: 30px !important;'>Import new records only</li>";
                         }
+                        if($row['checked'] == "1" || $row['skip'] == "1" || ($row['overwrite'] != "normal" && $row['overwrite'] != "") || $row['newrecords'] == "1"){
+                            $allOptions = "<ul>".$options."</ul>";
+                            $checked = '<a tabindex="0" role="button" data-container="body" data-toggle="popover" data-title="Options" data-content="'.$allOptions.'"><i class="fa fa-plus-circle fa-fw"></i>';
+                        }else{
+                            $checked = "<em>None</em>";
+                        }
+
 
                         if($row['totalrecordsIds'] != ""){
                             $records = count(explode(",",$row['totalrecordsIds']));
