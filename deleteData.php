@@ -13,7 +13,7 @@ if ($edoc) {
         $index = $key;
     }
     if($import[$index] || (!$import[$index] && !$import_check_started[$index]) || ($import_check_started[$index] && !$import_continue[$index])){
-        $total_import = $module->getProjectSetting('total-import') - 1;
+        $total_import = $module->getTotalImport() - 1;
         $module->setProjectSetting('total-import', $total_import);
 
         $import_number = $module->getProjectSetting('import-number');

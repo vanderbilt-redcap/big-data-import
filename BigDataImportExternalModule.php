@@ -101,6 +101,10 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         }
     }
 
+    function getTotalImport(){
+        return (int) $this->getProjectSetting('total-import');
+    }
+
     function checkRecords($project_id,$edoc,$id,$import_number){
         $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
         $q = db_query($sql);

@@ -38,7 +38,7 @@ $import_cancel_check = empty($module->getProjectSetting('import-cancel-check'))?
 array_push($import_cancel_check,false);
 $module->setProjectSetting('import-cancel-check', $import_cancel_check);
 
-$total_import = $module->getProjectSetting('total-import') + 1;
+$total_import = $module->getTotalImport() + 1;
 $module->setProjectSetting('total-import', $total_import);
 
 $import_number = empty($module->getProjectSetting('import-number'))?array():$module->getProjectSetting('import-number');

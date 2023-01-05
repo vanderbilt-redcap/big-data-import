@@ -5,6 +5,13 @@ $edoc_list = $module->getProjectSetting('edoc');
 if(empty($edoc_list)){
     $module->removeLogs("project_id = $project_id");
     $module->setProjectSetting('edoc', array());
+    /**
+     * This probably should have been either removed via removeProjectSetting(),
+     * or initialized to zero instead of the empty string,
+     * so that math operations would work in newer PHP versions.
+     * Mark worked around this while Eva was out by creating the getTotalImport()
+     * method that casts this value to an integer.
+     */
     $module->setProjectSetting('total-import', '');
     $module->setProjectSetting('import', array());
     $module->setProjectSetting('import-number', array());
