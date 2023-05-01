@@ -236,9 +236,9 @@ $project_id = (int)$_GET['pid'];
 
                         if($row['totalrecordsIds'] != ""){
                             $records = count(explode(",",$row['totalrecordsIds']));
-                            $total = '<a href="#" rel="popover" data-toggle="popover" data-target-selector="#records-activated'.$index.'" data-title="Records for Import #'.$row['import'].'" style="color: #337ab7;">Total: '.$records.'</a></div><br/>';
+                            $total = '<a href="#" rel="popover" data-toggle="popover" data-target-selector="#records-activated'.$index.'" data-title="Records for Import #'.htmlentities($row['import'],ENT_QUOTES).'" style="color: #337ab7;">Total: '.$records.'</a></div><br/>';
                             $total .= '<div id="records-activated'.$index.'" class="hidden">
-                                                            <p>'.$row['totalrecordsIds'].'</p>
+                                                            <p>'.htmlentities($row['totalrecordsIds'],ENT_QUOTES).'</p>
                                                        </div>';
                             $index++;
                         }else{
@@ -257,16 +257,16 @@ $project_id = (int)$_GET['pid'];
 
                         ?>
                         <tr>
-                            <td><?= $row['timestamp'] ?></td>
-                            <td><?= $row['file'] ?></td>
+                            <td><?= htmlentities($row['timestamp'],ENT_QUOTES) ?></td>
+                            <td><?= htmlentities($row['file'],ENT_QUOTES) ?></td>
                             <td><?= $user ?></td>
                             <td style="text-align: center"><?= $total ?></td>
                             <td style="text-align: center"><?= $records ?></td>
-                            <td style="text-align: center"><?= $row['totalrecordsIds'] ?></td>
+                            <td style="text-align: center"><?= htmlentities($row['totalrecordsIds'],ENT_QUOTES) ?></td>
                             <td style="text-align: center"><?= $status ?></td>
                             <td style="text-align: center"><?= $status_text ?></td>
                             <td style="text-align: center"><?= $checked ?></td>
-                            <td style="text-align: center"><?= $row['import'] ?></td>
+                            <td style="text-align: center"><?= htmlentities($row['import'],ENT_QUOTES) ?></td>
                         </tr>
                         <?php
                     }

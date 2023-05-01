@@ -399,13 +399,13 @@ foreach ($edoc_list as $index => $edoc) {
 
                                 ?>
                                 <tr>
-                                    <td><?= $row['timestamp'] ?></td>
-                                    <td><?= $row['file'] ?></td>
+                                    <td><?= htmlentities($row['timestamp'],ENT_QUOTES) ?></td>
+                                    <td><?= htmlentities($row['file'],ENT_QUOTES) ?></td>
                                     <td><?= $user ?></td>
                                     <td style="text-align: center"><?= $total ?></td>
                                     <td style="text-align: center"><?= $status ?></td>
                                     <td style="text-align: center"><?= $checked ?></td>
-                                    <td style="text-align: center"><?= $row['import'] ?></td>
+                                    <td style="text-align: center"><?= htmlentities($row['import'],ENT_QUOTES)?></td>
                                 </tr>
                                 <?php
                             }
@@ -465,7 +465,7 @@ foreach ($edoc_list as $index => $edoc) {
                 $delimiter = htmlentities($row['delimiter'],ENT_QUOTES);
                 $chkerrors = htmlentities($row['chkerrors'],ENT_QUOTES);
                 if($row['message'] != "Data" && $row['message'] != "DataUser") {
-                    $message = $row['message'];
+                    $message = htmlentities($row['message'],ENT_QUOTES);
                     if (!empty($chkerrors) && $row['message'] == "Errors") {
                         $message = '<a onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails('. $logId.','. $import .')" style="text-decoration: underline;color:#337ab7;cursor: pointer">
                             See error report
@@ -476,9 +476,9 @@ foreach ($edoc_list as $index => $edoc) {
                     } 
                     ?>
                     <tr>
-                        <td><?= $row['timestamp'] ?></td>
+                        <td><?= htmlentities($row['timestamp'],ENT_QUOTES) ?></td>
                         <td class="message"><?= $message ?></td>
-                        <td style="width:100px"><?= $row['recordlist'] ?></td>
+                        <td style="width:100px"><?= htmlentities($row['recordlist'],ENT_QUOTES) ?></td>
                         <td>
                             <?php if (!empty($details)) { ?>
                                 <button onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails(<?= $logId ?>,<?= $import ?>)">
