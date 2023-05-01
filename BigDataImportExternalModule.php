@@ -79,6 +79,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
                 if ($import_email != "") {
                     REDCap::email($import_email, $import_from, 'Import process #'.$import_number.' has failed.', "An exception occurred while importing.");
                 }
+                #CANCEL PENDING FILE
+                $this->resetValues($localProjectId,$edoc);
             }
         }
         $_GET['pid'] = $originalPid;
@@ -257,7 +259,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         <div>Importing records from CSV file:</div>
         <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
 
-        $path = $this->getSafePath($stored_name, EDOC_PATH) ;
+        $path = $this->getSafePath($stored_name, EDOC_PATH);
         $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$delimiter);
         $content = file($path);
         $fieldNames = explode($delimiter, $content[0]);
@@ -288,7 +290,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             $projectTitle = $row['app_title'];
         }
 
-        $q = $this->query("SELECT b.event_id FROM  redcap_events_arms a LEFT JOIN redcap_events_metadata b ON(a.arm_id = b.arm_id) where a.project_id =?'",[$project_id]);
+        $q = $this->query("SELECT b.event_id FROM  redcap_events_arms a LEFT JOIN redcap_events_metadata b ON(a.arm_id = b.arm_id) where a.project_id =?",[$project_id]);
         $repeatable = false;
         if (db_num_rows($q)) {
             while($row = db_fetch_assoc($q)) {

@@ -465,7 +465,7 @@ foreach ($edoc_list as $index => $edoc) {
                 $delimiter = htmlentities($row['delimiter'],ENT_QUOTES);
                 $chkerrors = htmlentities($row['chkerrors'],ENT_QUOTES);
                 if($row['message'] != "Data" && $row['message'] != "DataUser") {
-                    $message = htmlentities($row['message'],ENT_QUOTES);
+                    $message = $row['message'];
                     if (!empty($chkerrors) && $row['message'] == "Errors") {
                         $message = '<a onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails('. $logId.','. $import .')" style="text-decoration: underline;color:#337ab7;cursor: pointer">
                             See error report

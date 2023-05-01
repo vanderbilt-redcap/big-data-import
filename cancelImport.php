@@ -5,7 +5,7 @@ $import_cancel = $module->getProjectSetting('import-cancel', $project_id);
 $import_cancel_check = $module->getProjectSetting('import-cancel-check', $project_id);
 $import_check_started = $module->getProjectSetting('import-checked-started', $project_id);
 $import_checked = $module->getProjectSetting('import-checked', $project_id);
-$edoc_list = $module->getProjectSetting('edoc');
+$edoc_list = $module->getProjectSetting('edoc', $project_id);
 
 $edoc = array_pop(array_reverse($edoc_list));
 if (($key = array_search($edoc, $edoc_list)) !== false) {
@@ -21,6 +21,10 @@ if (($key = array_search($edoc, $edoc_list)) !== false) {
         $module->setProjectSetting('import-cancel-check', $import_cancel_check,$project_id);
         \REDCap::logEvent("<i>Big Data Import</i> checking process <b>cancelled</b>\n","user = ".USERID."\nFile = '".$module->getDocName($edoc)."'\nImport = ".$import_number,null,null,null,$project_id);
     }
+
+    $module->log("Import #$import_number cancelled <span class='fa fa-ban  fa-fw'></span>", ['import' => $import_number]);
+    $module->resetValues($project_id, $edoc);
+
     echo json_encode(array(
             'status' =>'success'
         )

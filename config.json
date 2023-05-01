@@ -2,7 +2,7 @@
 	"name": "Big Data Import",
 
 	"namespace": "Vanderbilt\\BigDataImportExternalModule",
-	"framework-version": 2,
+	"framework-version": 5,
 	"authors": [
 		{
 			"name": "Eva Bascompte Moragas",
@@ -51,7 +51,7 @@
 	"compatibility": {
 		"php-version-min": "5.5.0",
 		"php-version-max": "",
-		"redcap-version-min": "8.10.1",
+		"redcap-version-min": "9.7.6",
 		"redcap-version-max": ""
 	}
 }
