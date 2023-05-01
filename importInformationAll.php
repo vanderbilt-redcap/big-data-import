@@ -252,7 +252,7 @@ $project_id = (int)$_GET['pid'];
                                 ",[$project_id,"DataUser",$row['edoc']]);
                         $user = "";
                         if($rowUser = $resultsUser->fetch_assoc()){
-                            $user = $rowUser['user'];
+                            $user = htmlentities($rowUser['user'],ENT_QUOTES);
                         }
 
                         ?>
