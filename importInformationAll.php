@@ -247,9 +247,9 @@ $project_id = (int)$_GET['pid'];
 
                         $resultsUser = $module->queryLogs("
                                     select log_id, edoc, user 
-                                    where project_id = '".$project_id."' AND message='DataUser' AND edoc='".$row['edoc']."'
+                                    where project_id = ? AND message=? AND edoc=?
                                     order by log_id desc
-                                ");
+                                ",[$project_id,"DataUser",$row['edoc']]);
                         $user = "";
                         if($rowUser = $resultsUser->fetch_assoc()){
                             $user = $rowUser['user'];

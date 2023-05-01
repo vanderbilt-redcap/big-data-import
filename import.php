@@ -230,12 +230,8 @@ foreach ($edoc_list as $index => $edoc) {
             $docs = "";
             $count_file = 0;
             foreach ($edoc_list as $index => $edoc){
-                $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
-                $q = db_query($sql);
-
-                if ($error = db_error()) {
-                    die($sql . ': ' . $error);
-                }
+                $q = $module->query("SELECT stored_name,doc_name,doc_size,file_extension 
+                                    FROM redcap_edocs_metadata WHERE doc_id=?",[$edoc]);
                 while ($row = db_fetch_assoc($q)) {
                     if($import_checked[$index] && !$import_continue[$index] && !$import_cancel_checked[$index]) {
                         $count_file++;
@@ -274,12 +270,8 @@ foreach ($edoc_list as $index => $edoc) {
             $docs = "";
             $count_file = 0;
             foreach ($edoc_list as $index => $edoc){
-                $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
-                $q = db_query($sql);
-
-                if ($error = db_error()) {
-                    die($sql . ': ' . $error);
-                }
+                $q = $module->query("SELECT stored_name,doc_name,doc_size,file_extension 
+                                    FROM redcap_edocs_metadata WHERE doc_id=?",[$edoc]);
                 while ($row = db_fetch_assoc($q)) {
                     if((!$import_cancel[$index] && !$import_checked[$index]) || ($import_checked[$index] && $import_continue[$index])) {
                         $count_file++;
