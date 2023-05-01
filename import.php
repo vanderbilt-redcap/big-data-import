@@ -248,7 +248,7 @@ foreach ($edoc_list as $index => $edoc) {
                             $delete = " <span class='fa fa-fw fa-spinner fa-spin' spin='".$index."'></span>";
                         }
 
-                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."<span>".$continue_btn."</div>";
+                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . htmlentities($row['doc_name'],ENT_QUOTES) .$delete."<span>".$continue_btn."</div>";
                     }
                 }
             }
@@ -283,7 +283,7 @@ foreach ($edoc_list as $index => $edoc) {
                             $delete .= " <span class='fa fa-fw fa-spinner fa-spin' style='display: none' id='pending_spinner' spin='".$index."'></span>";
                             $importingFiles = true;
                         }
-                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . $row['doc_name'] .$delete."</div>";
+                        $docs .= "<div style='padding:5px'>".$count_file.". <span class='fa fa-file'></span> " . htmlentities($row['doc_name'],ENT_QUOTES)  .$delete."</div>";
                     }
                 }
             }
@@ -377,9 +377,9 @@ foreach ($edoc_list as $index => $edoc) {
 
                                 if($row['totalrecordsIds'] != ""){
                                     $records = count(explode(",",$row['totalrecordsIds']));
-                                    $total = '<a href="#" rel="popover" data-toggle="popover" data-target-selector="#records-activated'.$index.'" data-title="Records for Import #'.$row['import'].'" style="color: #337ab7;">Total: '.$records.'</a></div><br/>';
+                                    $total = '<a href="#" rel="popover" data-toggle="popover" data-target-selector="#records-activated'.$index.'" data-title="Records for Import #'.htmlentities($row['import'],ENT_QUOTES).'" style="color: #337ab7;">Total: '.$records.'</a></div><br/>';
                                     $total .= '<div id="records-activated'.$index.'" class="hidden">
-                                                            <p>'.$row['totalrecordsIds'].'</p>
+                                                            <p>'.htmlentities($row['totalrecordsIds'],ENT_QUOTES).'</p>
                                                        </div>';
                                     $index++;
                                 }else{
@@ -394,7 +394,7 @@ foreach ($edoc_list as $index => $edoc) {
                                 ",[$project_id,$row['edoc']]);
                                 $user = "";
                                 if($rowUser = $resultsUser->fetch_assoc()){
-                                    $user = $rowUser['user'];
+                                    $user = htmlentities($rowUser['user'],ENT_QUOTES);
                                 }
 
                                 ?>
@@ -458,12 +458,12 @@ foreach ($edoc_list as $index => $edoc) {
         }
         else{
             while($row = $results->fetch_assoc()){
-                $logId = $row['log_id'];
-                $details = $row['details'];
-                $import = $row['import'];
-                $batch = $row['batch'];
-                $delimiter = $row['delimiter'];
-                $chkerrors = $row['chkerrors'];
+                $logId = htmlentities($row['log_id'],ENT_QUOTES);
+                $details = htmlentities($row['details'],ENT_QUOTES);
+                $import = htmlentities($row['import'],ENT_QUOTES);
+                $batch = htmlentities($row['batch'],ENT_QUOTES);
+                $delimiter = htmlentities($row['delimiter'],ENT_QUOTES);
+                $chkerrors = htmlentities($row['chkerrors'],ENT_QUOTES);
                 if($row['message'] != "Data" && $row['message'] != "DataUser") {
                     $message = $row['message'];
                     if (!empty($chkerrors) && $row['message'] == "Errors") {
