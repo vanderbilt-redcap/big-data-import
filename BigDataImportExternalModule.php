@@ -136,7 +136,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
 
         $import_email = $this->getProjectSetting('import-email', $project_id);
 
-        $path = EDOC_PATH.$stored_name;
+        $path = $this->getSafePath($stored_name, EDOC_PATH) ;
         $content = file($path);
         $fieldNames = explode($delimiter, $content[0]);
         $str = preg_replace('/^[\pZ\p{Cc}\x{feff}]+|[\pZ\p{Cc}\x{feff}]+$/ux', '', $fieldNames[0]);
@@ -581,14 +581,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $this->setProjectSetting('import-checked-started', $import_check_started,$project_id);
 
         if($edoc != "" && $project_id != ""){
-            $sql = "DELETE FROM redcap_edocs_metadata WHERE project_id=".$project_id." AND doc_id=" . $edoc;
-            $q = db_query($sql);
-
-            if ($error = db_error()) {
-                echo $sql . ': ' . $error;
-                $this->exitAfterHook();
-
-            }
+            $this->query("DELETE FROM redcap_edocs_metadata WHERE project_id=? AND doc_id=?",
+                [$project_id,$edoc]);
         }
     }
 

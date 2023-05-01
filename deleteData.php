@@ -1,6 +1,6 @@
 <?php
-$edoc = $_POST['edoc'];
-$project_id = $_POST['pid'];
+$edoc = htmlentities($_POST['edoc'],ENT_QUOTES);
+$project_id = (int)$_POST['pid'];
 $status = "success";
 if ($edoc) {
     $import = $module->getProjectSetting('import');

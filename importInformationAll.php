@@ -6,6 +6,7 @@
 
 <?php
 $docname = "BigDataImport_".date("Y-m-d H:s");
+$project_id = (int)$_GET['pid'];
 ?>
 <script>
     $(document).ready(function() {
@@ -176,15 +177,14 @@ $docname = "BigDataImport_".date("Y-m-d H:s");
                 <?php
                 $results = $module->queryLogs("
                             select log_id, timestamp, file, status, import, checked, totalrecordsIds, newrecords, edoc 
-                            where project_id = '".$_GET['pid']."' AND message='Data'
+                            where project_id = ? AND message=?
                             order by log_id desc
-                        ");
+                        ",[$project_id,'Data']);
 
                 if($results->num_rows === 0){
                     ?>
                     <tr>
                         <td colspan="10">No import logs available</td>
-                        <td style="display: none;"></td>
                         <td style="display: none;"></td>
                         <td style="display: none;"></td>
                         <td style="display: none;"></td>
@@ -247,7 +247,7 @@ $docname = "BigDataImport_".date("Y-m-d H:s");
 
                         $resultsUser = $module->queryLogs("
                                     select log_id, edoc, user 
-                                    where project_id = '".$_GET['pid']."' AND message='DataUser' AND edoc='".$row['edoc']."'
+                                    where project_id = '".$project_id."' AND message='DataUser' AND edoc='".$row['edoc']."'
                                     order by log_id desc
                                 ");
                         $user = "";

@@ -74,7 +74,7 @@
 table.dataTable thead .sorting,
 table.dataTable thead .sorting_asc,
 table.dataTable thead .sorting_desc {
-    background : none;
+    background : none !important;
 }
 table[data-sortable] th:hover, .sorting_asc, .sorting_desc{
     color: #3a87ad;
