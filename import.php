@@ -332,10 +332,10 @@ foreach ($edoc_list as $index => $edoc) {
                         $results = $module->queryLogs("
                             select log_id, timestamp, file, status, import, totalrecordsIds, edoc,
                             checked, skip, overwrite, newrecords 
-                            where project_id = '".$project_id."' AND message='Data'
+                            where project_id = ? AND message='Data'
                             order by log_id desc
                             limit 5
-                        ");
+                        ",[$project_id]);
 
                         if($results->num_rows === 0){
                             ?>
@@ -397,9 +397,9 @@ foreach ($edoc_list as $index => $edoc) {
 
                                 $resultsUser = $module->queryLogs("
                                     select log_id, edoc, user 
-                                    where project_id = '".$project_id."' AND message='DataUser' AND edoc='".$row['edoc']."'
+                                    where project_id = ? AND message='DataUser' AND edoc=?
                                     order by log_id desc
-                                ");
+                                ",[$project_id,$row['edoc']]);
                                 $user = "";
                                 if($rowUser = $resultsUser->fetch_assoc()){
                                     $user = $rowUser['user'];
@@ -449,10 +449,10 @@ foreach ($edoc_list as $index => $edoc) {
         <?php
         $results = $module->queryLogs("
 				select log_id, timestamp, message, import, batch, delimiter, recordlist, details, chkerrors 
-				where project_id = '".$project_id."'
+				where project_id = ?
 				order by log_id desc
 				limit 2000
-			");
+			",[$project_id]);
 
         if($results->num_rows === 0){
             ?>

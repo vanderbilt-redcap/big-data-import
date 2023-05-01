@@ -106,14 +106,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     }
 
     function checkRecords($project_id,$edoc,$id,$import_number){
-        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
-        $q = db_query($sql);
-
-        if ($error = db_error()) {
-            echo $sql . ': ' . $error;
-            $this->exitAfterHook();
-        }
-
+        $q = $this->query("SELECT stored_name,doc_name,doc_size,file_extension 
+                        FROM redcap_edocs_metadata WHERE doc_id=?",[$edoc]);
         $stored_name = "";
         $doc_name = "";
         while ($row = db_fetch_assoc($q)) {
@@ -165,8 +159,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $checked_records_errors = rtrim($checked_records_errors, ", ");
         $checked_records = rtrim($checked_records, ", ");
         if($checked_records != "" || $checked_records_errors != ""){
-            $sql = "select app_title from redcap_projects where project_id = '".db_escape($project_id)."' limit 1";
-            $q = db_query($sql);
+            $q = $this->query("select app_title from redcap_projects where project_id = ? limit 1",[$project_id]);
+
             $projectTitle = "";
             while ($row = db_fetch_assoc($q)) {
                 $projectTitle = $row['app_title'];
@@ -219,14 +213,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     }
 
     function importRecords($project_id,$edoc,$id,$import_number){
-        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
-        $q = db_query($sql);
-
-        if ($error = db_error()) {
-            echo $sql . ': ' . $error;
-            $this->exitAfterHook();
-        }
-
+        $q = $this->query("SELECT stored_name,doc_name,doc_size,file_extension 
+                            FROM redcap_edocs_metadata WHERE doc_id=?",[$edoc]);
         $stored_name = "";
         $doc_name = "";
         while ($row = db_fetch_assoc($q)) {
@@ -269,7 +257,7 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         <div>Importing records from CSV file:</div>
         <div class='remote-project-title'><ul><li>" . $doc_name . "</li></ul></div>",['import' => $import_number, 'delimiter' => $delimiter_text]);
 
-        $path = EDOC_PATH.$stored_name;
+        $path = $this->getSafePath($stored_name, EDOC_PATH) ;
         $fieldNamesTotal = $this->csvToArrayNFieldNames($path,$delimiter);
         $content = file($path);
         $fieldNames = explode($delimiter, $content[0]);
@@ -294,20 +282,17 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
         $Proj = new \Project($project_id);
         $event_id = $Proj->firstEventId;
 
-        $sql = "select app_title from redcap_projects where project_id = '".db_escape($project_id)."' limit 1";
-        $q = db_query($sql);
+        $q = $this->query("select app_title from redcap_projects where project_id = ? limit 1",[$project_id]);
         $projectTitle = "";
         while ($row = db_fetch_assoc($q)) {
             $projectTitle = $row['app_title'];
         }
 
-       $sql = "SELECT b.event_id FROM  redcap_events_arms a LEFT JOIN redcap_events_metadata b ON(a.arm_id = b.arm_id) where a.project_id ='".db_escape($project_id)."'";
-        $q = db_query($sql);
+        $q = $this->query("SELECT b.event_id FROM  redcap_events_arms a LEFT JOIN redcap_events_metadata b ON(a.arm_id = b.arm_id) where a.project_id =?'",[$project_id]);
         $repeatable = false;
         if (db_num_rows($q)) {
             while($row = db_fetch_assoc($q)) {
-                $sql2 = "SELECT * FROM redcap_events_repeat WHERE event_id='".db_escape($row['event_id'])."'";
-                $q2 = db_query($sql2);
+                $q2 = $this->query("SELECT * FROM redcap_events_repeat WHERE event_id=?",[$row['event_id']]);
                 $row2 = db_fetch_assoc($q2);
                 if (db_num_rows($q2)){
                     $repeatable = true;
@@ -624,14 +609,8 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
     }
 
     function getDocName($edoc){
-        $sql = "SELECT stored_name,doc_name,doc_size,file_extension FROM redcap_edocs_metadata WHERE doc_id='" . db_escape($edoc)."'";
-        $q = db_query($sql);
-
-        if ($error = db_error()) {
-            echo $sql . ': ' . $error;
-            $this->exitAfterHook();
-        }
-
+        $q = $this->query("SELECT stored_name,doc_name,doc_size,file_extension 
+                            FROM redcap_edocs_metadata WHERE doc_id=?",[$edoc]);
         $doc_name = "";
         while ($row = db_fetch_assoc($q)) {
             $doc_name = $row['doc_name'];
