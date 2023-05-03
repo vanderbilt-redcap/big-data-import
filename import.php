@@ -476,6 +476,7 @@ foreach ($edoc_list as $index => $edoc) {
                     }
 
                     #We parse the $message content that has HTML tag to display them as HTML
+                    $import_url = explode(APP_PATH_WEBROOT,$module->getUrl('import.php'));
                     $htmlAllowed = [
                         "<br>",
                         "<br/>",
@@ -491,8 +492,7 @@ foreach ($edoc_list as $index => $edoc) {
                         "<span class='fa fa-times  fa-fw'></span>",
                         "<span class='fa fa-ban  fa-fw'></span>",
                         "<span class='fa fa-exclamation-circle fa-fw'></span>",
-                        "<span class='fa fa-exclamation-circle warning fa-fw'></span>",
-                        "<a href='" . $module->getUrl('import.php') . "'>this page</a>"
+                        "<span class='fa fa-exclamation-circle warning fa-fw'></span>"
                     ];
 
                     foreach($htmlAllowed as $html){
