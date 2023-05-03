@@ -476,7 +476,6 @@ foreach ($edoc_list as $index => $edoc) {
                     }
 
                     #We parse the $message content that has HTML tag to display them as HTML
-                    $import_url = explode(APP_PATH_WEBROOT,$module->getUrl('import.php'));
                     $htmlAllowed = [
                         "<br>",
                         "<br/>",
