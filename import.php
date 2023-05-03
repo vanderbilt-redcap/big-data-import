@@ -465,7 +465,7 @@ foreach ($edoc_list as $index => $edoc) {
                 $delimiter = htmlentities($row['delimiter'],ENT_QUOTES);
                 $chkerrors = htmlentities($row['chkerrors'],ENT_QUOTES);
                 if($row['message'] != "Data" && $row['message'] != "DataUser") {
-                    $message = $row['message'];
+                    $message = htmlspecialchars($row['message'],ENT_QUOTES);
                     if (!empty($chkerrors) && $row['message'] == "Errors") {
                         $message = '<a onclick="ExternalModules.Vanderbilt.BigDataImportExternalModule.showDetails('. $logId.','. $import .')" style="text-decoration: underline;color:#337ab7;cursor: pointer">
                             See error report
@@ -473,7 +473,35 @@ foreach ($edoc_list as $index => $edoc) {
                         <script>
                             ExternalModules.Vanderbilt.BigDataImportExternalModule.details['.$logId.'] = '.json_encode($chkerrors).'
                         </script>';
-                    } 
+                    }
+
+                    #We parse the $message content that has HTML tag to display them as HTML
+                    $htmlAllowed = [
+                        "<br>",
+                        "<br/>",
+                        "<b>",
+                        "</b>",
+                        "<strong>",
+                        "</strong>",
+                        "<div>",
+                        "</div>",
+                        "<div class='remote-project-title'><ul><li>",
+                        "</li></ul>",
+                        "<span class='fa fa-check fa-fw'></span>",
+                        "<span class='fa fa-times  fa-fw'></span>",
+                        "<span class='fa fa-ban  fa-fw'></span>",
+                        "<span class='fa fa-exclamation-circle fa-fw'></span>",
+                        "<span class='fa fa-exclamation-circle warning fa-fw'></span>",
+                        "<a href='" . $module->getUrl('import.php') . "'>this page</a>"
+                    ];
+
+                    foreach($htmlAllowed as $html){
+                        $message = str_replace(
+                            htmlspecialchars($html, ENT_QUOTES),
+                            $html,
+                            $message
+                            );
+                    }
                     ?>
                     <tr>
                         <td><?= htmlentities($row['timestamp'],ENT_QUOTES) ?></td>
