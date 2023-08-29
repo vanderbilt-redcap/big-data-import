@@ -491,7 +491,8 @@ foreach ($edoc_list as $index => $edoc) {
                         "<span class='fa fa-times  fa-fw'></span>",
                         "<span class='fa fa-ban  fa-fw'></span>",
                         "<span class='fa fa-exclamation-circle fa-fw'></span>",
-                        "<span class='fa fa-exclamation-circle warning fa-fw'></span>"
+                        "<span class='fa fa-exclamation-circle warning fa-fw'></span>",
+                        '<span class="fa-stack fa-2x"><i class="fas fa-circle fa-stack-2x"></i><i class="fas fa-redo fa-stack-1x fa-inverse"></i></span>'
                     ];
 
                     foreach($htmlAllowed as $html){
