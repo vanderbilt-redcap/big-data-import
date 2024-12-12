@@ -508,19 +508,25 @@ class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModul
             return true;
         });
 
-        if(empty($results['warnings'])){
-            foreach ($results['values'] as $warnings){
-                foreach ($fieldNames as $name){
-                    if(array_key_exists('validation',$warnings[$name]) && $warnings[$name]['validation'] == 'warning'){
-                        if(strpos($results['warnings'], $warnings[$name]['message']) === false || empty($results['warnings'])){
-                            $results['warnings'] .= $warnings[$name]['message']."\n";
+        if (empty($results['warnings'])) {
+            foreach ($results['values'] as $warnings) {
+                if (is_array($warnings)) {
+                    foreach ($fieldNames as $name) {
+                        if (array_key_exists($name, $warnings) && array_key_exists(
+                                'validation',
+                                $warnings[$name]
+                            ) && $warnings[$name]['validation'] == 'warning') {
+                            if (strpos(
+                                    $results['warnings'],
+                                    $warnings[$name]['message']
+                                ) === false || empty($results['warnings'])) {
+                                $results['warnings'] .= $warnings[$name]['message'] . "\n";
+                            }
                         }
                     }
                 }
             }
-
         }
-
         return $results;
     }
 
