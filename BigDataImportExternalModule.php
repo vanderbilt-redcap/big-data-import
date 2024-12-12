@@ -6,11 +6,6 @@ use REDCap;
 
 
 class BigDataImportExternalModule extends \ExternalModules\AbstractExternalModule{
-
-    public function __construct(){
-        parent::__construct();
-    }
-
     function cronbigdata(){
         $originalPid = $_GET['pid'];
         foreach($this->framework->getProjectsWithModuleEnabled() as $localProjectId){
