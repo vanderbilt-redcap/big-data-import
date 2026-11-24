@@ -1,0 +1,1 @@
+This Extenal Module is no longer maintained because its functionality has been incorporated into the RECap core.
